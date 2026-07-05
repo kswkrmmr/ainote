@@ -310,3 +310,8 @@ https://～
 
 Reactのフォーム、コンポーネント、状態管理、ルーティングなど基本的な操作は学習を進めている。  
 Rails APIとの連携やチャットUIの設計・状態管理については、実装を通してキャッチアップしていきたい。
+
+---
+
+## 14. 画面遷移図
+https://www.figma.com/design/QiU8uU5Jfsrj2PRjUIs0zk/%E7%94%BB%E9%9D%A2%E9%81%B7%E7%A7%BB%E5%9B%B3_%E3%81%82%E3%81%84%E3%81%AE%E3%81%A6?node-id=0-1&p=f&t=O2qA0Fea7xIMZkLc-0
