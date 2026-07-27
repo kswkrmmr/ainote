@@ -1,23 +1,18 @@
-import { useEffect, useState } from 'react'
 import './App.css'
+import heroImage from './assets/hero.png'
 
 function App() {
-  const [status, setStatus] = useState('checking...')
-
-  useEffect(() => {
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
-
-    fetch(`${apiBaseUrl}/api/health`)
-      .then((res) => res.json())
-      .then((data) => setStatus(data.status))
-      .catch(() => setStatus('error'))
-  }, [])
-
   return (
-    <div>
-      <h1>あいのて</h1>
-      <p>API status: {status}</p>
-    </div>
+    <main className="top-page">
+      <img src={heroImage} alt="あいのてのイメージ画像" className="hero-image" />
+      <p><br></br></p>
+      <p className="catchphrase">
+        言葉ですれ違ってしまう気持ちを、落ち着いて伝え合えるように。
+      </p>
+      <p className="description">
+        あいのては、AIが対話を支援することで、感情的にならずに大切な人と話し合えるようになるサービスです。
+      </p>
+    </main>
   )
 }
 
