@@ -28,9 +28,8 @@
 threads_count = ENV.fetch("RAILS_MAX_THREADS", 3)
 threads threads_count, threads_count
 
-# Run in single mode (no cluster) unless WEB_CONCURRENCY is explicitly set.
-# Avoids the "cluster mode with 1 worker" misconfiguration warning.
-workers ENV.fetch("WEB_CONCURRENCY", 0)
+# Always run in single mode (no cluster). MVP doesn't need multi-worker yet.
+workers 0
 
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
 port ENV.fetch("PORT", 3000)
