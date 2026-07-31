@@ -8,7 +8,7 @@ Rails.application.routes.draw do
   namespace :api do
     get "health", to: "health#show"
   end
-  
+
   # Defines the root path route ("/")
   # root "posts#index"
 end
