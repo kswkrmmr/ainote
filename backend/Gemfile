@@ -49,4 +49,7 @@ group :development, :test do
   # Test data generation helpers
   gem "factory_bot_rails"
   gem "faker"
+
+  # Code coverage measurement
+  gem "simplecov", require: false
 end
