@@ -8,8 +8,10 @@ Rails.application.routes.draw do
   namespace :api do
     get "health", to: "health#show"
     resources :users, only: [ :create ]
+    post "login", to: "sessions#create"
+    delete "logout", to: "sessions#destroy"
+    get "me", to: "me#show"
   end
-
   # Defines the root path route ("/")
   # root "posts#index"
 end
