@@ -52,4 +52,7 @@ group :development, :test do
 
   # Code coverage measurement
   gem "simplecov", require: false
+
+  # Issue and verify JWTs for API authentication
+  gem "jwt"
 end
