@@ -10,7 +10,7 @@ RSpec.describe "Api::Sessions", type: :request do
       expect(response).to have_http_status(:ok)
       body = JSON.parse(response.body)
       expect(body["token"]).to be_present
-      expect(body["user"]).to eq({ "id" => user.id, "email" => user.email })
+            expect(body["user"]).to eq({ "id" => user.id, "nickname" => user.nickname, "email" => user.email })
     end
 
     it "returns unauthorized with an incorrect password" do

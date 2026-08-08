@@ -5,7 +5,7 @@ module Api
 
       if user&.authenticate(params[:password])
         token = JsonWebToken.encode(user_id: user.id)
-        render json: { token: token, user: { id: user.id, email: user.email } }, status: :ok
+        render json: { token: token, user: { id: user.id, nickname: user.nickname, email: user.email } }, status: :ok
       else
         render json: { errors: [ "メールアドレスまたはパスワードが正しくありません" ] }, status: :unauthorized
       end

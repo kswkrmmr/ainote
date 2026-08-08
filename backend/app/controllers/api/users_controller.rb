@@ -4,7 +4,7 @@ module Api
       user = User.new(user_params)
 
       if user.save
-        render json: { id: user.id, email: user.email }, status: :created
+        render json: { id: user.id, nickname: user.nickname, email: user.email }, status: :created
       else
         render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
       end
@@ -13,7 +13,7 @@ module Api
     private
 
     def user_params
-      params.require(:user).permit(:email, :password)
+      params.require(:user).permit(:nickname, :email, :password, :password_confirmation)
     end
   end
 end
