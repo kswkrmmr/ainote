@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import '../App.css'
 import heroImage from '../assets/hero.png'
-import { Button, buttonVariants } from '@/components/ui/button'
+import Header from '@/components/Header'
+import { buttonVariants } from '@/components/ui/button'
 import { getToken, clearToken } from '@/lib/auth'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
@@ -32,43 +33,28 @@ function TopPage() {
       .finally(() => setCheckingSession(false))
   }, [])
 
-  async function handleLogout() {
-    const token = getToken()
-    try {
-      await fetch(`${apiBaseUrl}/api/logout`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-    } finally {
-      clearToken()
-      setCurrentUser(null)
-    }
-  }
-
   return (
-    <main className="top-page">
-      <img src={heroImage} alt="あいのてのイメージ画像" className="hero-image" />
-      <p className="catchphrase">言葉ですれ違ってしまう気持ちを、落ち着いて伝え合えるように。</p>
-      <p className="description">
-        あいのては、AIが対話を支援することで、感情的にならずに大切な人と話し合えるようになるサービスです。
-      </p>
+    <>
+      <Header />
+      <main className="top-page">
+        <img src={heroImage} alt="あいのてのイメージ画像" className="hero-image" />
+        <p className="catchphrase">言葉ですれ違ってしまう気持ちを、落ち着いて伝え合えるように。</p>
+        <p className="description">
+          あいのては、AIが対話を支援することで、感情的にならずに大切な人と話し合えるようになるサービスです。
+        </p>
 
-      {checkingSession ? null : currentUser ? (
-        <div className="session-status">
-          <p>ようこそ、{currentUser.email} さん</p>
-          <Button onClick={handleLogout}>ログアウト</Button>
-        </div>
-      ) : (
-        <div className="session-status">
-          <Link to="/signup" className={buttonVariants()}>
-            はじめる
-          </Link>
-          <Link to="/login" className={buttonVariants({ variant: 'outline' })}>
-            ログイン
-          </Link>
-        </div>
-      )}
-    </main>
+        {checkingSession
+          ? null
+          : currentUser && (
+              <div className="session-status">
+                <p>ようこそ、{currentUser.nickname} さん</p>
+                <Link to="/rooms/new" className={buttonVariants()}>
+                  ルームを作成する
+                </Link>
+              </div>
+            )}
+      </main>
+    </>
   )
 }
 
