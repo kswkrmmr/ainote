@@ -79,3 +79,23 @@
   align-items: center;
   gap: 12px;
 }
+
+.room-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+  margin: 0;
+  padding: 0;
+}
+
+.room-list-item {
+  display: block;
+  padding: 12px 16px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--text-h);
+}
