@@ -3,6 +3,8 @@ import TopPage from './pages/TopPage'
 import SignUpPage from './pages/SignUpPage'
 import LoginPage from './pages/LoginPage'
 import CreateRoomPage from './pages/CreateRoomPage'
+import RoomListPage from './pages/RoomListPage'
+import RoomDetailPage from './pages/RoomDetailPage'
 
 function App() {
   return (
@@ -10,7 +12,9 @@ function App() {
       <Route path="/" element={<TopPage />} />
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/rooms" element={<RoomListPage />} />
       <Route path="/rooms/new" element={<CreateRoomPage />} />
+      <Route path="/rooms/:id" element={<RoomDetailPage />} />
     </Routes>
   )
 }

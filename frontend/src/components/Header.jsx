@@ -28,7 +28,7 @@ function Header() {
       <nav className="app-header-nav">
         {loggedIn ? (
           <>
-            <Link to="/" className={buttonVariants({ variant: 'outline' })}>
+            <Link to="/rooms" className={buttonVariants({ variant: 'outline' })}>
               ルーム一覧
             </Link>
             <Button onClick={handleLogout}>ログアウト</Button>

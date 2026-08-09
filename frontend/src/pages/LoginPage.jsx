@@ -30,7 +30,7 @@ function LoginPage() {
 
       if (response.ok) {
         setToken(data.token)
-        navigate('/')
+        navigate('/rooms')
       } else {
         setErrors(data.errors || ['ログインに失敗しました'])
       }

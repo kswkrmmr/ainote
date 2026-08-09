@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Header from '@/components/Header'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { getToken, clearToken } from '@/lib/auth'
@@ -58,6 +58,9 @@ function CreateRoomPage() {
         <Header />
         <main className="signup-page">
           <h1>ルームを作成しました</h1>
+          <Link to="/rooms" className={buttonVariants()}>
+            ルーム一覧へ
+          </Link>
         </main>
       </>
     )
