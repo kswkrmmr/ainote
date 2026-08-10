@@ -5,6 +5,7 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { getToken, clearToken } from '@/lib/auth'
+import { buildInvitationMessage } from '@/lib/invitation'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
 
@@ -13,7 +14,8 @@ function CreateRoomPage() {
   const [partnerDisplayName, setPartnerDisplayName] = useState('')
   const [errors, setErrors] = useState([])
   const [submitting, setSubmitting] = useState(false)
-  const [created, setCreated] = useState(null)
+  const [invitationMessage, setInvitationMessage] = useState(null)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (!getToken()) {
@@ -27,7 +29,7 @@ function CreateRoomPage() {
     setErrors([])
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/rooms`, {
+      const roomResponse = await fetch(`${apiBaseUrl}/api/rooms`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -35,15 +37,29 @@ function CreateRoomPage() {
         },
         body: JSON.stringify({ room: { partner_display_name: partnerDisplayName } }),
       })
-      const data = await response.json()
+      const roomData = await roomResponse.json()
 
-      if (response.ok) {
-        setCreated(data)
-      } else if (response.status === 401) {
-        clearToken()
-        navigate('/login')
+      if (!roomResponse.ok) {
+        if (roomResponse.status === 401) {
+          clearToken()
+          navigate('/login')
+          return
+        }
+        setErrors(roomData.errors || ['ルームの作成に失敗しました'])
+        return
+      }
+
+      const invitationResponse = await fetch(`${apiBaseUrl}/api/rooms/${roomData.id}/invitations`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${getToken()}` },
+      })
+      const invitationData = await invitationResponse.json()
+
+      if (invitationResponse.ok) {
+        const url = `${window.location.origin}/invitations/${invitationData.token}`
+        setInvitationMessage(buildInvitationMessage(url))
       } else {
-        setErrors(data.errors || ['ルームの作成に失敗しました'])
+        setErrors(invitationData.errors || ['招待URLの発行に失敗しました'])
       }
     } catch {
       setErrors(['通信エラーが発生しました'])
@@ -52,13 +68,22 @@ function CreateRoomPage() {
     }
   }
 
-  if (created) {
+  async function handleCopy() {
+    await navigator.clipboard.writeText(invitationMessage)
+    setCopied(true)
+  }
+
+  if (invitationMessage) {
     return (
       <>
         <Header />
         <main className="signup-page">
           <h1>ルームを作成しました</h1>
-          <Link to="/rooms" className={buttonVariants()}>
+          <div className="invitation-url">
+            <p className="invitation-message">{invitationMessage}</p>
+            <Button onClick={handleCopy}>{copied ? 'コピーしました' : 'コピー'}</Button>
+          </div>
+          <Link to="/rooms" className={buttonVariants({ variant: 'outline' })}>
             ルーム一覧へ
           </Link>
         </main>
