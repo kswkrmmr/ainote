@@ -14,6 +14,7 @@ Rails.application.routes.draw do
     resources :rooms, only: [ :index, :show, :create ] do
       resources :invitations, only: [ :create ]
     end
+    get "invitations/:token", to: "invitations#show"
   end
   # Defines the root path route ("/")
   # root "posts#index"
