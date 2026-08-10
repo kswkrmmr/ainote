@@ -1,7 +1,19 @@
 module Api
   class InvitationsController < ApplicationController
-    before_action :authenticate_user!
-    before_action :set_room
+    before_action :authenticate_user!, only: [ :create ]
+    before_action :set_room, only: [ :create ]
+
+    def show
+      invitation = Invitation.find_by(token: params[:token])
+
+      if invitation.nil?
+        render json: { errors: [ "招待が見つかりません" ] }, status: :not_found
+      elsif invitation.expires_at.present? && invitation.expires_at < Time.current
+        render json: { errors: [ "この招待は有効期限が切れています" ] }, status: :gone
+      else
+        render json: { room_id: invitation.room_id, inviter_nickname: invitation.room.owner.nickname }
+      end
+    end
 
     def create
       invitation = @room.invitations.build
