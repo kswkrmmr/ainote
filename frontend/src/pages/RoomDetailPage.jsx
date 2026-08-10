@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import Header from '@/components/Header'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { getToken, clearToken } from '@/lib/auth'
+import { buildInvitationMessage } from '@/lib/invitation'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
 
@@ -11,7 +12,7 @@ function RoomDetailPage() {
   const navigate = useNavigate()
   const [room, setRoom] = useState(null)
   const [notFound, setNotFound] = useState(false)
-  const [invitationUrl, setInvitationUrl] = useState(null)
+  const [invitationMessage, setInvitationMessage] = useState(null)
   const [issuing, setIssuing] = useState(false)
   const [copied, setCopied] = useState(false)
   const [errors, setErrors] = useState([])
@@ -58,7 +59,8 @@ function RoomDetailPage() {
       const data = await response.json()
 
       if (response.ok) {
-        setInvitationUrl(`${window.location.origin}/invitations/${data.token}`)
+        const url = `${window.location.origin}/invitations/${data.token}`
+        setInvitationMessage(buildInvitationMessage(url))
       } else if (response.status === 401) {
         clearToken()
         navigate('/login')
@@ -73,7 +75,7 @@ function RoomDetailPage() {
   }
 
   async function handleCopy() {
-    await navigator.clipboard.writeText(invitationUrl)
+    await navigator.clipboard.writeText(invitationMessage)
     setCopied(true)
   }
 
@@ -111,9 +113,9 @@ function RoomDetailPage() {
           </ul>
         )}
 
-        {invitationUrl && (
+        {invitationMessage && (
           <div className="invitation-url">
-            <p>{invitationUrl}</p>
+            <p className="invitation-message">{invitationMessage}</p>
             <Button onClick={handleCopy}>{copied ? 'コピーしました' : 'コピー'}</Button>
           </div>
         )}

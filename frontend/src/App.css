@@ -111,3 +111,8 @@
   max-width: 480px;
   word-break: break-all;
 }
+
+.invitation-message {
+  white-space: pre-line;
+  text-align: left;
+}
