@@ -1,15 +1,21 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import Header from '@/components/Header'
-import { buttonVariants } from '@/components/ui/button'
-import { getToken } from '@/lib/auth'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { getToken, clearToken } from '@/lib/auth'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
 
 function InvitationPage() {
   const { token } = useParams()
+  const navigate = useNavigate()
   const [invitation, setInvitation] = useState(null)
   const [error, setError] = useState(null)
+  const [partnerDisplayName, setPartnerDisplayName] = useState('')
+  const [joinErrors, setJoinErrors] = useState([])
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     fetch(`${apiBaseUrl}/api/invitations/${token}`)
@@ -23,6 +29,40 @@ function InvitationPage() {
       })
       .catch(() => setError('通信エラーが発生しました'))
   }, [token])
+
+  async function handleJoin(event) {
+    event.preventDefault()
+    setSubmitting(true)
+    setJoinErrors([])
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/invitations/${token}/join`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({ invitation: { partner_display_name: partnerDisplayName } }),
+      })
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          clearToken()
+          navigate('/login')
+          return
+        }
+        setJoinErrors(data.errors || ['参加に失敗しました'])
+        return
+      }
+
+      navigate(`/rooms/${data.room_id}`)
+    } catch {
+      setJoinErrors(['通信エラーが発生しました'])
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   if (error) {
     return (
@@ -58,7 +98,28 @@ function InvitationPage() {
         <p>{invitation.inviter_nickname} さんから、あいのてのルームに招待されています。</p>
 
         {getToken() ? (
-          <p>参加する機能は準備中です。</p>
+          <form onSubmit={handleJoin} className="signup-form">
+            <div className="form-field">
+              <Label htmlFor="partnerDisplayName">相手の表示名</Label>
+              <Input
+                id="partnerDisplayName"
+                type="text"
+                value={partnerDisplayName}
+                onChange={(event) => setPartnerDisplayName(event.target.value)}
+                required
+              />
+            </div>
+            {joinErrors.length > 0 && (
+              <ul className="form-errors">
+                {joinErrors.map((joinError) => (
+                  <li key={joinError}>{joinError}</li>
+                ))}
+              </ul>
+            )}
+            <Button type="submit" disabled={submitting}>
+              {submitting ? '参加中...' : '参加する'}
+            </Button>
+          </form>
         ) : (
           <>
             <p>参加するには、まず新規登録またはログインしてください。</p>
