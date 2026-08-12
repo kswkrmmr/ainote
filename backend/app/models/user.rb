@@ -3,6 +3,7 @@ class User < ApplicationRecord
 
   has_many :owned_rooms, class_name: "Room", foreign_key: :owner_id, dependent: :destroy, inverse_of: :owner
   has_many :room_members, dependent: :destroy
+  has_many :themes, dependent: :destroy
 
   normalizes :email, with: ->(email) { email.strip.downcase }
 

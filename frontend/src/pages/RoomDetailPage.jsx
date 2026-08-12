@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Header from '@/components/Header'
 import { Button, buttonVariants } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { getToken, clearToken } from '@/lib/auth'
 import { buildInvitationMessage } from '@/lib/invitation'
 
@@ -16,6 +18,10 @@ function RoomDetailPage() {
   const [issuing, setIssuing] = useState(false)
   const [copied, setCopied] = useState(false)
   const [errors, setErrors] = useState([])
+  const [themeTitle, setThemeTitle] = useState('')
+  const [themeErrors, setThemeErrors] = useState([])
+  const [creatingTheme, setCreatingTheme] = useState(false)
+  const [createdTheme, setCreatedTheme] = useState(null)
 
   useEffect(() => {
     const token = getToken()
@@ -79,6 +85,41 @@ function RoomDetailPage() {
     setCopied(true)
   }
 
+  async function handleCreateTheme(event) {
+    event.preventDefault()
+    setCreatingTheme(true)
+    setThemeErrors([])
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/rooms/${id}/themes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({ theme: { title: themeTitle } }),
+      })
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          clearToken()
+          navigate('/login')
+          return
+        }
+        setThemeErrors(data.errors || ['テーマの作成に失敗しました'])
+        return
+      }
+
+      setCreatedTheme(data)
+      setThemeTitle('')
+    } catch {
+      setThemeErrors(['通信エラーが発生しました'])
+    } finally {
+      setCreatingTheme(false)
+    }
+  }
+
   if (notFound) {
     return (
       <>
@@ -99,7 +140,30 @@ function RoomDetailPage() {
       <main className="signup-page">
         <h1>ルーム詳細</h1>
         {room && <p>相手の表示名: {room.partner_display_name}</p>}
-        <p>テーマ機能は準備中です。</p>
+
+        <form onSubmit={handleCreateTheme} className="signup-form">
+          <div className="form-field">
+            <Label htmlFor="themeTitle">テーマを作成する</Label>
+            <Input
+              id="themeTitle"
+              type="text"
+              value={themeTitle}
+              onChange={(event) => setThemeTitle(event.target.value)}
+              required
+            />
+          </div>
+          {themeErrors.length > 0 && (
+            <ul className="form-errors">
+              {themeErrors.map((themeError) => (
+                <li key={themeError}>{themeError}</li>
+              ))}
+            </ul>
+          )}
+          <Button type="submit" disabled={creatingTheme}>
+            {creatingTheme ? '作成中...' : 'テーマを作成する'}
+          </Button>
+        </form>
+        {createdTheme && <p>テーマ「{createdTheme.title}」を作成しました。</p>}
 
         <Button onClick={handleIssueInvitation} disabled={issuing}>
           {issuing ? '発行中...' : '招待URLを発行する'}

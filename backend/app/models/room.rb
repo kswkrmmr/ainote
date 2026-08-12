@@ -3,4 +3,5 @@ class Room < ApplicationRecord
 
   has_many :room_members, dependent: :destroy
   has_many :invitations, dependent: :destroy
+  has_many :themes, dependent: :destroy
 end

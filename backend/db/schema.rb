@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_10_145456) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_12_062938) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,6 +42,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_10_145456) do
     t.index ["owner_id"], name: "index_rooms_on_owner_id"
   end
 
+  create_table "themes", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "room_id", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["room_id"], name: "index_themes_on_room_id"
+    t.index ["user_id"], name: "index_themes_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", null: false
@@ -55,4 +65,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_10_145456) do
   add_foreign_key "room_members", "rooms"
   add_foreign_key "room_members", "users"
   add_foreign_key "rooms", "users", column: "owner_id"
+  add_foreign_key "themes", "rooms"
+  add_foreign_key "themes", "users"
 end
