@@ -3,17 +3,25 @@ module Api
     before_action :authenticate_user!
     before_action :set_room
 
+    def index
+      render json: @room.themes.order(:created_at).map { |theme| theme_json(theme) }
+    end
+
     def create
       theme = @room.themes.build(theme_params.merge(user: current_user))
 
       if theme.save
-        render json: { id: theme.id, title: theme.title }, status: :created
+        render json: theme_json(theme), status: :created
       else
         render json: { errors: theme.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
     private
+
+    def theme_json(theme)
+      { id: theme.id, title: theme.title }
+    end
 
     def set_room
       room_member = current_user.room_members.find_by(room_id: params[:room_id])

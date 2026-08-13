@@ -13,7 +13,7 @@ Rails.application.routes.draw do
     get "me", to: "me#show"
     resources :rooms, only: [ :index, :show, :create ] do
       resources :invitations, only: [ :create ]
-      resources :themes, only: [ :create ]
+      resources :themes, only: [ :index, :create ]
     end
     get "invitations/:token", to: "invitations#show"
     post "invitations/:token/join", to: "invitations#join"
