@@ -18,10 +18,10 @@ function RoomDetailPage() {
   const [issuing, setIssuing] = useState(false)
   const [copied, setCopied] = useState(false)
   const [errors, setErrors] = useState([])
+  const [themes, setThemes] = useState([])
   const [themeTitle, setThemeTitle] = useState('')
   const [themeErrors, setThemeErrors] = useState([])
   const [creatingTheme, setCreatingTheme] = useState(false)
-  const [createdTheme, setCreatedTheme] = useState(null)
 
   useEffect(() => {
     const token = getToken()
@@ -50,6 +50,12 @@ function RoomDetailPage() {
           setRoom(data)
         }
       })
+
+    fetch(`${apiBaseUrl}/api/rooms/${id}/themes`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((response) => (response.ok ? response.json() : []))
+      .then((data) => setThemes(data))
   }, [id, navigate])
 
   async function handleIssueInvitation() {
@@ -111,7 +117,7 @@ function RoomDetailPage() {
         return
       }
 
-      setCreatedTheme(data)
+      setThemes((prevThemes) => [...prevThemes, data])
       setThemeTitle('')
     } catch {
       setThemeErrors(['通信エラーが発生しました'])
@@ -141,6 +147,14 @@ function RoomDetailPage() {
         <h1>ルーム詳細</h1>
         {room && <p>相手の表示名: {room.partner_display_name}</p>}
 
+        {themes.length > 0 && (
+          <ul>
+            {themes.map((theme) => (
+              <li key={theme.id}>{theme.title}</li>
+            ))}
+          </ul>
+        )}
+
         <form onSubmit={handleCreateTheme} className="signup-form">
           <div className="form-field">
             <Label htmlFor="themeTitle">テーマを作成する</Label>
@@ -163,7 +177,6 @@ function RoomDetailPage() {
             {creatingTheme ? '作成中...' : 'テーマを作成する'}
           </Button>
         </form>
-        {createdTheme && <p>テーマ「{createdTheme.title}」を作成しました。</p>}
 
         <Button onClick={handleIssueInvitation} disabled={issuing}>
           {issuing ? '発行中...' : '招待URLを発行する'}
