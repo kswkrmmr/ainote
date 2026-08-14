@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_12_062938) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_14_054111) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -22,6 +22,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_062938) do
     t.datetime "updated_at", null: false
     t.index ["room_id"], name: "index_invitations_on_room_id"
     t.index ["token"], name: "index_invitations_on_token", unique: true
+  end
+
+  create_table "messages", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "original_body", null: false
+    t.bigint "theme_id", null: false
+    t.text "translated_body", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["theme_id"], name: "index_messages_on_theme_id"
+    t.index ["user_id"], name: "index_messages_on_user_id"
   end
 
   create_table "room_members", force: :cascade do |t|
@@ -62,6 +73,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_062938) do
   end
 
   add_foreign_key "invitations", "rooms"
+  add_foreign_key "messages", "themes"
+  add_foreign_key "messages", "users"
   add_foreign_key "room_members", "rooms"
   add_foreign_key "room_members", "users"
   add_foreign_key "rooms", "users", column: "owner_id"

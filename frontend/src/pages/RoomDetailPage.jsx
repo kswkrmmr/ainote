@@ -150,7 +150,9 @@ function RoomDetailPage() {
         {themes.length > 0 && (
           <ul>
             {themes.map((theme) => (
-              <li key={theme.id}>{theme.title}</li>
+              <li key={theme.id}>
+                <Link to={`/themes/${theme.id}`}>{theme.title}</Link>
+              </li>
             ))}
           </ul>
         )}
