@@ -18,7 +18,7 @@ Rails.application.routes.draw do
     get "invitations/:token", to: "invitations#show"
     post "invitations/:token/join", to: "invitations#join"
     resources :themes, only: [] do
-      resources :messages, only: [ :index ]
+      resources :messages, only: [ :index, :create ]
     end
   end
   # Defines the root path route ("/")
