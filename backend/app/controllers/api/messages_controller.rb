@@ -8,8 +8,11 @@ module Api
     end
 
     def create
-      # AI変換(Issue #31〜)が入るまでの暫定措置として、原文をそのままtranslated_bodyに入れる
-      message = @theme.messages.build(message_params.merge(user: current_user, translated_body: message_params[:original_body]))
+      original_body = message_params[:original_body]
+      translated_body = original_body.present? ? translate(original_body) : nil
+      return if performed?
+
+      message = @theme.messages.build(original_body: original_body, translated_body: translated_body, user: current_user)
 
       if message.save
         render json: message_json(message), status: :created
@@ -19,6 +22,13 @@ module Api
     end
 
     private
+
+    def translate(text)
+      MessageTranslator.translate(text)
+    rescue StandardError
+      render json: { errors: [ "AI変換に失敗しました。もう一度お試しください。" ] }, status: :bad_gateway
+      nil
+    end
 
     def message_params
       params.require(:message).permit(:original_body)
