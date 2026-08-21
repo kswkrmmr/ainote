@@ -8,41 +8,71 @@ RSpec.describe OpenaiClient do
     ENV["OPENAI_API_KEY"] = original_key
   end
 
-  describe "#chat" do
-    it "returns the message content from the chat completion response" do
-      message = double("message", content: "変換後の文章")
-      choice = double("choice", message: message)
-      response = double("response", choices: [ choice ])
-      completions = double("completions")
-      chat = double("chat", completions: completions)
-      client = instance_double(OpenAI::Client, chat: chat)
-      allow(OpenAI::Client).to receive(:new).and_return(client)
+  def stub_chat_completion(model:, content:)
+    stub_request(:post, "https://api.openai.com/v1/chat/completions").to_return(
+      status: 200,
+      headers: { "Content-Type" => "application/json" },
+      body: {
+        id: "chatcmpl-123",
+        object: "chat.completion",
+        created: 1_700_000_000,
+        model: model,
+        choices: [
+          { index: 0, message: { role: "assistant", content: content }, finish_reason: "stop" }
+        ]
+      }.to_json
+    )
+  end
 
-      expect(completions).to receive(:create).with(
-        model: OpenaiClient::DEFAULT_MODEL,
-        messages: [ { role: "user", content: "hi" } ]
-      ).and_return(response)
+  describe "#chat" do
+    it "returns the message content from a successful response" do
+      stub_chat_completion(model: OpenaiClient::DEFAULT_MODEL, content: "変換後の文章")
 
       result = described_class.new.chat(messages: [ { role: "user", content: "hi" } ])
 
       expect(result).to eq("変換後の文章")
     end
 
-    it "uses the given model when one is passed" do
-      message = double("message", content: "ok")
-      choice = double("choice", message: message)
-      response = double("response", choices: [ choice ])
-      completions = double("completions")
-      chat = double("chat", completions: completions)
-      client = instance_double(OpenAI::Client, chat: chat)
-      allow(OpenAI::Client).to receive(:new).and_return(client)
-
-      expect(completions).to receive(:create).with(
-        model: "gpt-4.1-mini",
-        messages: [ { role: "user", content: "hi" } ]
-      ).and_return(response)
+    it "sends the given model and messages in the request body" do
+      stub = stub_chat_completion(model: "gpt-4.1-mini", content: "ok").with(
+        body: hash_including("model" => "gpt-4.1-mini", "messages" => [ { "role" => "user", "content" => "hi" } ])
+      )
 
       described_class.new.chat(messages: [ { role: "user", content: "hi" } ], model: "gpt-4.1-mini")
+
+      expect(stub).to have_been_requested
+    end
+
+    it "raises a RateLimitError when the API responds with 429" do
+      stub_request(:post, "https://api.openai.com/v1/chat/completions").to_return(
+        status: 429,
+        headers: { "Content-Type" => "application/json" },
+        body: { error: { message: "Rate limit exceeded", type: "rate_limit_error" } }.to_json
+      )
+
+      expect {
+        described_class.new.chat(messages: [ { role: "user", content: "hi" } ])
+      }.to raise_error(OpenAI::Errors::RateLimitError)
+    end
+
+    it "raises an InternalServerError when the API responds with 500" do
+      stub_request(:post, "https://api.openai.com/v1/chat/completions").to_return(
+        status: 500,
+        headers: { "Content-Type" => "application/json" },
+        body: { error: { message: "Internal server error", type: "server_error" } }.to_json
+      )
+
+      expect {
+        described_class.new.chat(messages: [ { role: "user", content: "hi" } ])
+      }.to raise_error(OpenAI::Errors::InternalServerError)
+    end
+
+    it "raises an APITimeoutError when the request times out" do
+      stub_request(:post, "https://api.openai.com/v1/chat/completions").to_timeout
+
+      expect {
+        described_class.new.chat(messages: [ { role: "user", content: "hi" } ])
+      }.to raise_error(OpenAI::Errors::APITimeoutError)
     end
   end
 end
