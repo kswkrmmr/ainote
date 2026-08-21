@@ -56,6 +56,9 @@ group :development, :test do
   gem "factory_bot_rails"
   gem "faker"
 
+  # Stub HTTP requests in tests [https://github.com/bblimke/webmock]
+  gem "webmock"
+
   # Code coverage measurement
   gem "simplecov", require: false
 end

@@ -98,5 +98,42 @@ RSpec.describe "Api::Messages", type: :request do
 
       expect(response).to have_http_status(:unauthorized)
     end
+
+    context "when the OpenAI API call itself fails" do
+      around do |example|
+        original_key = ENV["OPENAI_API_KEY"]
+        ENV["OPENAI_API_KEY"] = "test-api-key"
+        example.run
+        ENV["OPENAI_API_KEY"] = original_key
+      end
+
+      before do
+        allow(MessageTranslator).to receive(:translate).and_call_original
+      end
+
+      it "returns bad_gateway when the API responds with a rate limit error" do
+        stub_request(:post, "https://api.openai.com/v1/chat/completions").to_return(
+          status: 429,
+          headers: { "Content-Type" => "application/json" },
+          body: { error: { message: "Rate limit exceeded", type: "rate_limit_error" } }.to_json
+        )
+
+        expect {
+          post "/api/themes/#{theme.id}/messages", params: { message: { original_body: "なんで私ばっかり家事してるの？" } }, headers: headers
+        }.not_to change(Message, :count)
+
+        expect(response).to have_http_status(:bad_gateway)
+      end
+
+      it "returns bad_gateway when the API times out" do
+        stub_request(:post, "https://api.openai.com/v1/chat/completions").to_timeout
+
+        expect {
+          post "/api/themes/#{theme.id}/messages", params: { message: { original_body: "なんで私ばっかり家事してるの？" } }, headers: headers
+        }.not_to change(Message, :count)
+
+        expect(response).to have_http_status(:bad_gateway)
+      end
+    end
   end
 end
