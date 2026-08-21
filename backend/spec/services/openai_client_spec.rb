@@ -1,6 +1,13 @@
 require "rails_helper"
 
 RSpec.describe OpenaiClient do
+  around do |example|
+    original_key = ENV["OPENAI_API_KEY"]
+    ENV["OPENAI_API_KEY"] = "test-api-key"
+    example.run
+    ENV["OPENAI_API_KEY"] = original_key
+  end
+
   describe "#chat" do
     it "returns the message content from the chat completion response" do
       message = double("message", content: "変換後の文章")
