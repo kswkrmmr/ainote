@@ -3,7 +3,7 @@ module Api
     before_action :authenticate_user!
 
     def index
-      room_members = current_user.room_members.includes(:room)
+      room_members = current_user.room_members
       render json: room_members.map { |member| room_json(member) }
     end
 

@@ -62,3 +62,8 @@ group :development, :test do
   # Code coverage measurement
   gem "simplecov", require: false
 end
+
+group :development do
+  # Detect N+1 queries and unused eager loading [https://github.com/flyerhzm/bullet]
+  gem "bullet"
+end
