@@ -40,7 +40,18 @@ RSpec.describe "Api::Rooms", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(JSON.parse(response.body)).to eq(
-        [ { "id" => my_room_member.room_id, "partner_display_name" => "妻" } ]
+        [ { "id" => my_room_member.room_id, "partner_display_name" => "妻", "awaiting_partner" => true } ]
+      )
+    end
+
+    it "marks a room as not awaiting a partner once a second member has joined" do
+      my_room_member = create(:room_member, user: user, partner_display_name: "妻")
+      create(:room_member, room: my_room_member.room)
+
+      get "/api/rooms", headers: headers
+
+      expect(JSON.parse(response.body)).to eq(
+        [ { "id" => my_room_member.room_id, "partner_display_name" => "妻", "awaiting_partner" => false } ]
       )
     end
 
@@ -59,7 +70,7 @@ RSpec.describe "Api::Rooms", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(JSON.parse(response.body)).to eq(
-        { "id" => room_member.room_id, "partner_display_name" => "父" }
+        { "id" => room_member.room_id, "partner_display_name" => "父", "awaiting_partner" => true }
       )
     end
 
