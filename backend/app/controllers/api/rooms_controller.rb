@@ -18,17 +18,13 @@ module Api
     end
 
     def create
-      room = current_user.owned_rooms.build
-      room_member = RoomMember.new(room: room, user: current_user, partner_display_name: room_params[:partner_display_name])
+      result = RoomCreator.call(owner: current_user, partner_display_name: room_params[:partner_display_name])
 
-      Room.transaction do
-        room.save!
-        room_member.save!
+      if result.success?
+        render json: { id: result.room.id }, status: :created
+      else
+        render json: { errors: result.errors }, status: :unprocessable_entity
       end
-
-      render json: { id: room.id }, status: :created
-    rescue ActiveRecord::RecordInvalid
-      render json: { errors: room.errors.full_messages + room_member.errors.full_messages }, status: :unprocessable_entity
     end
 
     private

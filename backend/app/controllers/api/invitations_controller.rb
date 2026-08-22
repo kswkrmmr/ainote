@@ -29,17 +29,12 @@ module Api
     def join
       return if performed?
 
-      if current_user.room_members.exists?(room_id: @invitation.room_id)
-        render json: { errors: [ "すでにこのルームに参加しています" ] }, status: :unprocessable_entity
-        return
-      end
+      result = RoomJoiner.call(invitation: @invitation, user: current_user, partner_display_name: join_params[:partner_display_name])
 
-      room_member = @invitation.room.room_members.build(user: current_user, partner_display_name: join_params[:partner_display_name])
-
-      if room_member.save
-        render json: { room_id: room_member.room_id }, status: :created
+      if result.success?
+        render json: { room_id: result.room_member.room_id }, status: :created
       else
-        render json: { errors: room_member.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: result.errors }, status: :unprocessable_entity
       end
     end
 
