@@ -141,6 +141,75 @@
   font-size: 13px;
 }
 
+.theme-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 420px;
+  margin: 0;
+  padding: 0;
+}
+
+.theme-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  text-align: left;
+  background: var(--bg);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.theme-list-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.theme-list-item-link {
+  text-decoration: none;
+  color: var(--text-h);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.theme-list-item-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.theme-list-item-delete:hover {
+  background: var(--destructive, #e11d48);
+  color: var(--primary-foreground);
+}
+
+.theme-list-item-delete:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .invitation-url {
   display: flex;
   flex-direction: column;

@@ -173,25 +173,7 @@ function RoomDetailPage() {
       <Header />
       <main className="signup-page">
         <h1>ルーム詳細</h1>
-        {room && <p>相手の表示名: {room.partner_display_name}</p>}
-
-        {themes.length > 0 && (
-          <ul>
-            {themes.map((theme) => (
-              <li key={theme.id}>
-                <Link to={`/themes/${theme.id}`}>{theme.title}</Link>
-                <button
-                  type="button"
-                  aria-label="テーマを削除"
-                  onClick={() => handleDeleteTheme(theme.id)}
-                  disabled={deletingThemeId === theme.id}
-                >
-                  ×
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+        {room && <p>{room.partner_display_name}さんとのチャットルーム</p>}
 
         <form onSubmit={handleCreateTheme} className="signup-form">
           <div className="form-field">
@@ -215,6 +197,34 @@ function RoomDetailPage() {
             {creatingTheme ? '作成中...' : 'テーマを作成する'}
           </Button>
         </form>
+
+        {themes.length > 0 && (
+          <ul className="theme-list">
+            {themes.map((theme) => (
+              <li
+                key={theme.id}
+                className="theme-list-item"
+                onClick={() => navigate(`/themes/${theme.id}`)}
+              >
+                <Link to={`/themes/${theme.id}`} className="theme-list-item-link">
+                  {theme.title}
+                </Link>
+                <button
+                  type="button"
+                  className="theme-list-item-delete"
+                  aria-label="テーマを削除"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    handleDeleteTheme(theme.id)
+                  }}
+                  disabled={deletingThemeId === theme.id}
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
 
         {room?.awaiting_partner && (
           <>
