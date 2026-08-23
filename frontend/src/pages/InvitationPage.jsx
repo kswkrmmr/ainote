@@ -126,10 +126,16 @@ function InvitationPage() {
         ) : (
           <>
             <p>参加するには、まず新規登録またはログインしてください。</p>
-            <Link to="/signup" className={buttonVariants()}>
+            <Link
+              to={`/signup?redirect=${encodeURIComponent(`/invitations/${token}`)}`}
+              className={buttonVariants()}
+            >
               新規登録
             </Link>
-            <Link to="/login" className={buttonVariants({ variant: 'outline' })}>
+            <Link
+              to={`/login?redirect=${encodeURIComponent(`/invitations/${token}`)}`}
+              className={buttonVariants({ variant: 'outline' })}
+            >
               ログイン
             </Link>
           </>

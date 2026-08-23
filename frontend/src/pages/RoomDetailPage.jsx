@@ -216,23 +216,27 @@ function RoomDetailPage() {
           </Button>
         </form>
 
-        <Button onClick={handleIssueInvitation} disabled={issuing}>
-          {issuing ? '発行中...' : '招待URLを発行する'}
-        </Button>
+        {room?.awaiting_partner && (
+          <>
+            <Button onClick={handleIssueInvitation} disabled={issuing}>
+              {issuing ? '発行中...' : '招待URLを発行する'}
+            </Button>
 
-        {errors.length > 0 && (
-          <ul className="form-errors">
-            {errors.map((error) => (
-              <li key={error}>{error}</li>
-            ))}
-          </ul>
-        )}
+            {errors.length > 0 && (
+              <ul className="form-errors">
+                {errors.map((error) => (
+                  <li key={error}>{error}</li>
+                ))}
+              </ul>
+            )}
 
-        {invitationMessage && (
-          <div className="invitation-url">
-            <p className="invitation-message">{invitationMessage}</p>
-            <Button onClick={handleCopy}>{copied ? 'コピーしました' : 'コピー'}</Button>
-          </div>
+            {invitationMessage && (
+              <div className="invitation-url">
+                <p className="invitation-message">{invitationMessage}</p>
+                <Button onClick={handleCopy}>{copied ? 'コピーしました' : 'コピー'}</Button>
+              </div>
+            )}
+          </>
         )}
 
         <Link to="/rooms" className={buttonVariants({ variant: 'outline' })}>
