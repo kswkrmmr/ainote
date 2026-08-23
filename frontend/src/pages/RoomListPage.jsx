@@ -91,8 +91,9 @@ function RoomListPage() {
 
                 {room.awaiting_partner && (
                   <div className="room-list-invitation">
-                    <p>承認待ち</p>
+                    <span className="room-list-status">承認待ち</span>
                     <Button
+                      variant="outline"
                       onClick={() => handleReissueInvitation(room.id)}
                       disabled={issuingRoomId === room.id}
                     >
