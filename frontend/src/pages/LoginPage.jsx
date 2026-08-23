@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Header from '@/components/Header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,6 +10,8 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
 
 function LoginPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const redirect = searchParams.get('redirect')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState([])
@@ -30,7 +32,7 @@ function LoginPage() {
 
       if (response.ok) {
         setToken(data.token)
-        navigate('/rooms')
+        navigate(redirect?.startsWith('/invitations/') ? redirect : '/rooms')
       } else {
         setErrors(data.errors || ['ログインに失敗しました'])
       }

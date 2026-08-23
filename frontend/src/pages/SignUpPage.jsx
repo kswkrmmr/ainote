@@ -1,12 +1,15 @@
 import { useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import Header from '@/components/Header'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
 
 function SignUpPage() {
+  const [searchParams] = useSearchParams()
+  const redirect = searchParams.get('redirect')
   const [nickname, setNickname] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -48,6 +51,17 @@ function SignUpPage() {
         <Header />
         <main className="signup-page">
           <h1>登録が完了しました</h1>
+          <p>{email} で登録が完了しました。</p>
+          <Link
+            to={
+              redirect?.startsWith('/invitations/')
+                ? `/login?redirect=${encodeURIComponent(redirect)}`
+                : '/login'
+            }
+            className={buttonVariants()}
+          >
+            ログインへ進む
+          </Link>
         </main>
       </>
     )
