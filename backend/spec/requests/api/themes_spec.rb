@@ -7,6 +7,37 @@ RSpec.describe "Api::Themes", type: :request do
   let(:room) { create(:room, owner: user) }
   let(:room_member) { create(:room_member, room: room, user: user, partner_display_name: "妻") }
 
+  describe "GET /api/themes/:id" do
+    it "returns the theme with its room_id" do
+      room_member
+      theme = create(:theme, room: room, user: user, title: "家事について")
+
+      get "/api/themes/#{theme.id}", headers: headers
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)).to eq(
+        { "id" => theme.id, "title" => "家事について", "room_id" => room.id }
+      )
+    end
+
+    it "returns not_found for a theme belonging to a room the current user is not a member of" do
+      other_theme = create(:theme)
+
+      get "/api/themes/#{other_theme.id}", headers: headers
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "returns unauthorized without a token" do
+      room_member
+      theme = create(:theme, room: room, user: user)
+
+      get "/api/themes/#{theme.id}"
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
+
   describe "GET /api/rooms/:room_id/themes" do
     it "returns the themes for the room in creation order" do
       room_member
