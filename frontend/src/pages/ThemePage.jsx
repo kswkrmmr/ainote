@@ -13,6 +13,7 @@ function ThemePage() {
   const navigate = useNavigate()
   const [theme, setTheme] = useState(null)
   const [messages, setMessages] = useState(null)
+  const [currentUserId, setCurrentUserId] = useState(null)
   const [notFound, setNotFound] = useState(false)
   const [originalBody, setOriginalBody] = useState('')
   const [sendErrors, setSendErrors] = useState([])
@@ -24,6 +25,16 @@ function ThemePage() {
       navigate('/login')
       return
     }
+
+    fetch(`${apiBaseUrl}/api/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (data) {
+          setCurrentUserId(data.id)
+        }
+      })
 
     fetch(`${apiBaseUrl}/api/themes/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -115,9 +126,18 @@ function ThemePage() {
         {messages && messages.length === 0 && <p>まだメッセージはありません。</p>}
 
         {messages && messages.length > 0 && (
-          <ul>
+          <ul className="message-list">
             {messages.map((message) => (
-              <li key={message.id}>{message.translated_body}</li>
+              <li
+                key={message.id}
+                className={
+                  message.user_id === currentUserId
+                    ? 'message-bubble message-bubble-self'
+                    : 'message-bubble message-bubble-partner'
+                }
+              >
+                {message.translated_body}
+              </li>
             ))}
           </ul>
         )}
