@@ -84,8 +84,8 @@ function RoomListPage() {
         {rooms && rooms.length > 0 && (
           <ul className="room-list">
             {rooms.map((room) => (
-              <li key={room.id}>
-                <Link to={`/rooms/${room.id}`} className="room-list-item">
+              <li key={room.id} className="room-list-item">
+                <Link to={`/rooms/${room.id}`} className="room-list-item-link">
                   {room.partner_display_name}
                 </Link>
 
