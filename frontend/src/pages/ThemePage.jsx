@@ -11,6 +11,7 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
 function ThemePage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const [theme, setTheme] = useState(null)
   const [messages, setMessages] = useState(null)
   const [notFound, setNotFound] = useState(false)
   const [originalBody, setOriginalBody] = useState('')
@@ -24,7 +25,7 @@ function ThemePage() {
       return
     }
 
-    fetch(`${apiBaseUrl}/api/themes/${id}/messages`, {
+    fetch(`${apiBaseUrl}/api/themes/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((response) => {
@@ -39,6 +40,16 @@ function ThemePage() {
         }
         return response.json()
       })
+      .then((data) => {
+        if (data) {
+          setTheme(data)
+        }
+      })
+
+    fetch(`${apiBaseUrl}/api/themes/${id}/messages`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((response) => (response.ok ? response.json() : null))
       .then((data) => {
         if (data) {
           setMessages(data)
@@ -133,6 +144,12 @@ function ThemePage() {
             {sending ? '送信中...' : '送信する'}
           </Button>
         </form>
+
+        {theme && (
+          <Link to={`/rooms/${theme.room_id}`} className={buttonVariants({ variant: 'outline' })}>
+            一覧へ戻る
+          </Link>
+        )}
       </main>
     </>
   )
