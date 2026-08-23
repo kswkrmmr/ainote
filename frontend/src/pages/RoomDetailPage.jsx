@@ -22,6 +22,7 @@ function RoomDetailPage() {
   const [themeTitle, setThemeTitle] = useState('')
   const [themeErrors, setThemeErrors] = useState([])
   const [creatingTheme, setCreatingTheme] = useState(false)
+  const [deletingThemeId, setDeletingThemeId] = useState(null)
 
   useEffect(() => {
     const token = getToken()
@@ -126,6 +127,33 @@ function RoomDetailPage() {
     }
   }
 
+  async function handleDeleteTheme(themeId) {
+    if (!window.confirm('このテーマを削除しますか?メッセージも全て削除されます。')) {
+      return
+    }
+
+    setDeletingThemeId(themeId)
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/themes/${themeId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${getToken()}` },
+      })
+
+      if (response.status === 401) {
+        clearToken()
+        navigate('/login')
+        return
+      }
+
+      if (response.ok) {
+        setThemes((prevThemes) => prevThemes.filter((theme) => theme.id !== themeId))
+      }
+    } finally {
+      setDeletingThemeId(null)
+    }
+  }
+
   if (notFound) {
     return (
       <>
@@ -152,6 +180,14 @@ function RoomDetailPage() {
             {themes.map((theme) => (
               <li key={theme.id}>
                 <Link to={`/themes/${theme.id}`}>{theme.title}</Link>
+                <button
+                  type="button"
+                  aria-label="テーマを削除"
+                  onClick={() => handleDeleteTheme(theme.id)}
+                  disabled={deletingThemeId === theme.id}
+                >
+                  ×
+                </button>
               </li>
             ))}
           </ul>

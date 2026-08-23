@@ -2,7 +2,7 @@ module Api
   class ThemesController < ApplicationController
     before_action :authenticate_user!
     before_action :set_room, only: [ :index, :create ]
-    before_action :set_theme, only: [ :show ]
+    before_action :set_theme, only: [ :show, :destroy ]
 
     def index
       render json: @room.themes.order(:created_at).map { |theme| theme_json(theme) }
@@ -10,6 +10,11 @@ module Api
 
     def show
       render json: { id: @theme.id, title: @theme.title, room_id: @theme.room_id }
+    end
+
+    def destroy
+      @theme.destroy
+      head :no_content
     end
 
     def create
