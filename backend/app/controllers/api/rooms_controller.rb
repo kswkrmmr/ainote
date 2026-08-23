@@ -3,7 +3,7 @@ module Api
     before_action :authenticate_user!
 
     def index
-      room_members = current_user.room_members
+      room_members = current_user.room_members.includes(room: :room_members)
       render json: room_members.map { |member| room_json(member) }
     end
 
@@ -30,7 +30,11 @@ module Api
     private
 
     def room_json(room_member)
-      { id: room_member.room_id, partner_display_name: room_member.partner_display_name }
+      {
+        id: room_member.room_id,
+        partner_display_name: room_member.partner_display_name,
+        awaiting_partner: room_member.room.room_members.size < 2
+      }
     end
 
     def room_params

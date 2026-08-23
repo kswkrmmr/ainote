@@ -119,6 +119,9 @@ function InvitationPage() {
             <Button type="submit" disabled={submitting}>
               {submitting ? '参加中...' : '参加する'}
             </Button>
+            <Button type="button" variant="outline" onClick={() => navigate('/rooms')}>
+              参加しない
+            </Button>
           </form>
         ) : (
           <>
