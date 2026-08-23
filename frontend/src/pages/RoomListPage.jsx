@@ -84,13 +84,20 @@ function RoomListPage() {
         {rooms && rooms.length > 0 && (
           <ul className="room-list">
             {rooms.map((room) => (
-              <li key={room.id} className="room-list-item">
+              <li
+                key={room.id}
+                className="room-list-item"
+                onClick={() => navigate(`/rooms/${room.id}`)}
+              >
                 <Link to={`/rooms/${room.id}`} className="room-list-item-link">
                   {room.partner_display_name}
                 </Link>
 
                 {room.awaiting_partner && (
-                  <div className="room-list-invitation">
+                  <div
+                    className="room-list-invitation"
+                    onClick={(event) => event.stopPropagation()}
+                  >
                     <span className="room-list-status">承認待ち</span>
                     <Button
                       variant="outline"

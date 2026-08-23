@@ -107,6 +107,7 @@
   border: 1px solid var(--border, #e5e7eb);
   border-radius: 16px;
   box-shadow: var(--shadow);
+  cursor: pointer;
   transition:
     box-shadow 0.15s ease,
     transform 0.15s ease;
