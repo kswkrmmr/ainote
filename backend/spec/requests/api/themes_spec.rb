@@ -38,6 +38,39 @@ RSpec.describe "Api::Themes", type: :request do
     end
   end
 
+  describe "DELETE /api/themes/:id" do
+    it "deletes the theme and its messages" do
+      room_member
+      theme = create(:theme, room: room, user: user)
+      create(:message, theme: theme, user: user)
+
+      expect {
+        delete "/api/themes/#{theme.id}", headers: headers
+      }.to change(Theme, :count).by(-1).and change(Message, :count).by(-1)
+
+      expect(response).to have_http_status(:no_content)
+    end
+
+    it "returns not_found for a theme belonging to a room the current user is not a member of" do
+      other_theme = create(:theme)
+
+      expect {
+        delete "/api/themes/#{other_theme.id}", headers: headers
+      }.not_to change(Theme, :count)
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "returns unauthorized without a token" do
+      room_member
+      theme = create(:theme, room: room, user: user)
+
+      delete "/api/themes/#{theme.id}"
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
+
   describe "GET /api/rooms/:room_id/themes" do
     it "returns the themes for the room in creation order" do
       room_member
