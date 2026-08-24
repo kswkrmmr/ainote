@@ -27,6 +27,17 @@ module Api
       end
     end
 
+    def destroy
+      room_member = current_user.room_members.find_by(room_id: params[:id])
+
+      if room_member
+        room_member.room.destroy
+        head :no_content
+      else
+        render json: { errors: [ "ルームが見つかりません" ] }, status: :not_found
+      end
+    end
+
     private
 
     def room_json(room_member)
