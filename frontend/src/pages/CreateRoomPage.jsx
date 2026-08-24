@@ -98,7 +98,7 @@ function CreateRoomPage() {
         <h1>ルーム作成</h1>
         <form onSubmit={handleSubmit} className="signup-form">
           <div className="form-field">
-            <Label htmlFor="partnerDisplayName">話したい相手(表示名)</Label>
+            <Label htmlFor="partnerDisplayName">話したい相手の呼び方</Label>
             <Input
               id="partnerDisplayName"
               type="text"
@@ -106,6 +106,7 @@ function CreateRoomPage() {
               onChange={(event) => setPartnerDisplayName(event.target.value)}
               required
             />
+            <p className="form-hint">相手には表示されません</p>
           </div>
           {errors.length > 0 && (
             <ul className="form-errors">
