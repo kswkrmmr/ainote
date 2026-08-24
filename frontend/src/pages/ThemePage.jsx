@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Header from '@/components/Header'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -18,6 +18,11 @@ function ThemePage() {
   const [originalBody, setOriginalBody] = useState('')
   const [sendErrors, setSendErrors] = useState([])
   const [sending, setSending] = useState(false)
+  const messageListBottomRef = useRef(null)
+
+  useEffect(() => {
+    messageListBottomRef.current?.scrollIntoView()
+  }, [messages])
 
   useEffect(() => {
     const token = getToken()
@@ -139,6 +144,7 @@ function ThemePage() {
                 {message.translated_body}
               </li>
             ))}
+            <li ref={messageListBottomRef} />
           </ul>
         )}
 
