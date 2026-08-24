@@ -100,7 +100,7 @@ function InvitationPage() {
         {getToken() ? (
           <form onSubmit={handleJoin} className="signup-form">
             <div className="form-field">
-              <Label htmlFor="partnerDisplayName">相手の表示名</Label>
+              <Label htmlFor="partnerDisplayName">話したい相手の呼び方</Label>
               <Input
                 id="partnerDisplayName"
                 type="text"
@@ -108,6 +108,7 @@ function InvitationPage() {
                 onChange={(event) => setPartnerDisplayName(event.target.value)}
                 required
               />
+              <p className="form-hint">相手には表示されません</p>
             </div>
             {joinErrors.length > 0 && (
               <ul className="form-errors">
