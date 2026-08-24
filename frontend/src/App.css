@@ -233,9 +233,13 @@
   gap: 8px;
   width: 100%;
   max-width: 480px;
+  max-height: 50vh;
   margin: 0;
-  padding: 0;
+  padding: 8px;
   list-style: none;
+  overflow-y: auto;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 16px;
 }
 
 .message-bubble {
