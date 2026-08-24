@@ -11,7 +11,7 @@ RSpec.describe RoomMember, type: :model do
     room_member = build(:room_member, partner_display_name: nil)
 
     expect(room_member).not_to be_valid
-    expect(room_member.errors[:partner_display_name]).to include("can't be blank")
+    expect(room_member.errors[:partner_display_name]).to include("を入力してください")
   end
 
   it "is invalid without a room" do
@@ -33,7 +33,7 @@ RSpec.describe RoomMember, type: :model do
     duplicate = build(:room_member, room: room, user: user)
 
     expect(duplicate).not_to be_valid
-    expect(duplicate.errors[:user_id]).to include("has already been taken")
+    expect(duplicate.errors[:user_id]).to include("はすでに存在します")
   end
 
   it "is valid when the same user joins a different room" do

@@ -1,0 +1,31 @@
+ja:
+  errors:
+    format: "%{attribute}%{message}"
+    messages:
+      blank: "を入力してください"
+      taken: "はすでに存在します"
+      invalid: "は不正な値です"
+      confirmation: "が一致しません"
+      too_short: "は%{count}文字以上で入力してください"
+      too_long: "は%{count}文字以内で入力してください"
+  activerecord:
+    errors:
+      messages:
+        record_invalid: "バリデーションに失敗しました: %{errors}"
+    attributes:
+      user:
+        nickname: "ニックネーム"
+        email: "メールアドレス"
+        password: "パスワード"
+        password_confirmation: "パスワード（確認）"
+      room:
+        owner: "作成者"
+      room_member:
+        partner_display_name: "相手の表示名"
+      theme:
+        title: "タイトル"
+      message:
+        original_body: "本文"
+        translated_body: "変換後本文"
+      invitation:
+        token: "トークン"
