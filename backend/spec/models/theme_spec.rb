@@ -11,7 +11,7 @@ RSpec.describe Theme, type: :model do
     theme = build(:theme, title: nil)
 
     expect(theme).not_to be_valid
-    expect(theme.errors[:title]).to include("can't be blank")
+    expect(theme.errors[:title]).to include("を入力してください")
   end
 
   it "is invalid without a room" do

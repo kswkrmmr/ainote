@@ -30,7 +30,7 @@ RSpec.describe Invitation, type: :model do
     duplicate = build(:invitation, token: existing.token)
 
     expect(duplicate).not_to be_valid
-    expect(duplicate.errors[:token]).to include("has already been taken")
+    expect(duplicate.errors[:token]).to include("はすでに存在します")
   end
 
   it "sets expires_at to 7 days from now by default" do
