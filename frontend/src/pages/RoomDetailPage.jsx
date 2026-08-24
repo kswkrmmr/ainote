@@ -211,7 +211,7 @@ function RoomDetailPage() {
                 </Link>
                 <button
                   type="button"
-                  className="theme-list-item-delete"
+                  className="list-item-delete"
                   aria-label="テーマを削除"
                   onClick={(event) => {
                     event.stopPropagation()

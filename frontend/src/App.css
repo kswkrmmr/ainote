@@ -118,6 +118,14 @@
   transform: translateY(-1px);
 }
 
+.room-list-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+}
+
 .room-list-item-link {
   text-decoration: none;
   color: var(--text-h);
@@ -181,7 +189,7 @@
   font-size: 16px;
 }
 
-.theme-list-item-delete {
+.list-item-delete {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -200,12 +208,12 @@
     color 0.15s ease;
 }
 
-.theme-list-item-delete:hover {
+.list-item-delete:hover {
   background: var(--destructive, #e11d48);
   color: var(--primary-foreground);
 }
 
-.theme-list-item-delete:disabled {
+.list-item-delete:disabled {
   opacity: 0.5;
   cursor: default;
 }

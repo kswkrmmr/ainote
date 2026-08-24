@@ -13,6 +13,7 @@ function RoomListPage() {
   const [issuingRoomId, setIssuingRoomId] = useState(null)
   const [invitationMessages, setInvitationMessages] = useState({})
   const [copiedRoomId, setCopiedRoomId] = useState(null)
+  const [deletingRoomId, setDeletingRoomId] = useState(null)
 
   useEffect(() => {
     const token = getToken()
@@ -70,6 +71,33 @@ function RoomListPage() {
     setCopiedRoomId(roomId)
   }
 
+  async function handleDeleteRoom(roomId) {
+    if (!window.confirm('このルームを削除しますか?テーマやメッセージも全て削除されます。')) {
+      return
+    }
+
+    setDeletingRoomId(roomId)
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/rooms/${roomId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${getToken()}` },
+      })
+
+      if (response.status === 401) {
+        clearToken()
+        navigate('/login')
+        return
+      }
+
+      if (response.ok) {
+        setRooms((prevRooms) => prevRooms.filter((room) => room.id !== roomId))
+      }
+    } finally {
+      setDeletingRoomId(null)
+    }
+  }
+
   return (
     <>
       <Header />
@@ -89,16 +117,30 @@ function RoomListPage() {
                 className="room-list-item"
                 onClick={() => navigate(`/rooms/${room.id}`)}
               >
-                <Link to={`/rooms/${room.id}`} className="room-list-item-link">
-                  {room.partner_display_name}
-                </Link>
+                <div className="room-list-item-header">
+                  <Link to={`/rooms/${room.id}`} className="room-list-item-link">
+                    {room.partner_display_name}
+                  </Link>
+                  <button
+                    type="button"
+                    className="list-item-delete"
+                    aria-label="ルームを削除"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      handleDeleteRoom(room.id)
+                    }}
+                    disabled={deletingRoomId === room.id}
+                  >
+                    ×
+                  </button>
+                </div>
 
                 {room.awaiting_partner && (
                   <div
                     className="room-list-invitation"
                     onClick={(event) => event.stopPropagation()}
                   >
-                    <span className="room-list-status">承認待ち</span>
+                    <span className="room-list-status">招待中</span>
                     <Button
                       variant="outline"
                       onClick={() => handleReissueInvitation(room.id)}
