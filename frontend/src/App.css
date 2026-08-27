@@ -64,6 +64,10 @@
   max-width: 320px;
 }
 
+.message-form {
+  max-width: 480px;
+}
+
 .form-field {
   display: flex;
   flex-direction: column;
