@@ -41,33 +41,24 @@ RSpec.describe "Api::Messages", type: :request do
     end
   end
 
-  describe "POST /api/themes/:theme_id/messages" do
+  describe "POST /api/themes/:theme_id/messages/preview" do
     before do
       room_member
       allow(MessageTranslator).to receive(:translate).and_return("穏やかな言い回しに変換された文章")
     end
 
-    it "creates a message using the AI-translated text" do
+    it "returns the AI-translated text without creating a message" do
       expect {
-        post "/api/themes/#{theme.id}/messages", params: { message: { original_body: "なんで私ばっかり家事してるの？" } }, headers: headers
-      }.to change(Message, :count).by(1)
+        post "/api/themes/#{theme.id}/messages/preview", params: { message: { original_body: "なんで私ばっかり家事してるの？" } }, headers: headers
+      }.not_to change(Message, :count)
 
       expect(MessageTranslator).to have_received(:translate).with("なんで私ばっかり家事してるの？")
-      expect(response).to have_http_status(:created)
-      expect(JSON.parse(response.body)).to eq(
-        {
-          "id" => Message.last.id,
-          "user_id" => user.id,
-          "original_body" => "なんで私ばっかり家事してるの？",
-          "translated_body" => "穏やかな言い回しに変換された文章"
-        }
-      )
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)).to eq({ "translated_body" => "穏やかな言い回しに変換された文章" })
     end
 
     it "returns unprocessable_entity with a blank original_body without calling the AI" do
-      expect {
-        post "/api/themes/#{theme.id}/messages", params: { message: { original_body: "" } }, headers: headers
-      }.not_to change(Message, :count)
+      post "/api/themes/#{theme.id}/messages/preview", params: { message: { original_body: "" } }, headers: headers
 
       expect(MessageTranslator).not_to have_received(:translate)
       expect(response).to have_http_status(:unprocessable_entity)
@@ -77,9 +68,7 @@ RSpec.describe "Api::Messages", type: :request do
     it "returns bad_gateway when the AI translation fails" do
       allow(MessageTranslator).to receive(:translate).and_raise(StandardError, "boom")
 
-      expect {
-        post "/api/themes/#{theme.id}/messages", params: { message: { original_body: "なんで私ばっかり家事してるの？" } }, headers: headers
-      }.not_to change(Message, :count)
+      post "/api/themes/#{theme.id}/messages/preview", params: { message: { original_body: "なんで私ばっかり家事してるの？" } }, headers: headers
 
       expect(response).to have_http_status(:bad_gateway)
       expect(JSON.parse(response.body)["errors"]).to be_present
@@ -88,13 +77,13 @@ RSpec.describe "Api::Messages", type: :request do
     it "returns not_found for a theme belonging to a room the current user is not a member of" do
       other_theme = create(:theme)
 
-      post "/api/themes/#{other_theme.id}/messages", params: { message: { original_body: "テスト" } }, headers: headers
+      post "/api/themes/#{other_theme.id}/messages/preview", params: { message: { original_body: "テスト" } }, headers: headers
 
       expect(response).to have_http_status(:not_found)
     end
 
     it "returns unauthorized without a token" do
-      post "/api/themes/#{theme.id}/messages", params: { message: { original_body: "テスト" } }
+      post "/api/themes/#{theme.id}/messages/preview", params: { message: { original_body: "テスト" } }
 
       expect(response).to have_http_status(:unauthorized)
     end
@@ -118,9 +107,7 @@ RSpec.describe "Api::Messages", type: :request do
           body: { error: { message: "Rate limit exceeded", type: "rate_limit_error" } }.to_json
         )
 
-        expect {
-          post "/api/themes/#{theme.id}/messages", params: { message: { original_body: "なんで私ばっかり家事してるの？" } }, headers: headers
-        }.not_to change(Message, :count)
+        post "/api/themes/#{theme.id}/messages/preview", params: { message: { original_body: "なんで私ばっかり家事してるの？" } }, headers: headers
 
         expect(response).to have_http_status(:bad_gateway)
       end
@@ -128,12 +115,59 @@ RSpec.describe "Api::Messages", type: :request do
       it "returns bad_gateway when the API times out" do
         stub_request(:post, "https://api.openai.com/v1/chat/completions").to_timeout
 
-        expect {
-          post "/api/themes/#{theme.id}/messages", params: { message: { original_body: "なんで私ばっかり家事してるの？" } }, headers: headers
-        }.not_to change(Message, :count)
+        post "/api/themes/#{theme.id}/messages/preview", params: { message: { original_body: "なんで私ばっかり家事してるの？" } }, headers: headers
 
         expect(response).to have_http_status(:bad_gateway)
       end
+    end
+  end
+
+  describe "POST /api/themes/:theme_id/messages" do
+    before { room_member }
+
+    it "creates a message with the given original and translated text" do
+      expect {
+        post "/api/themes/#{theme.id}/messages",
+          params: { message: { original_body: "なんで私ばっかり家事してるの？", translated_body: "穏やかな言い回しに変換された文章" } },
+          headers: headers
+      }.to change(Message, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+      expect(JSON.parse(response.body)).to eq(
+        {
+          "id" => Message.last.id,
+          "user_id" => user.id,
+          "original_body" => "なんで私ばっかり家事してるの？",
+          "translated_body" => "穏やかな言い回しに変換された文章"
+        }
+      )
+    end
+
+    it "returns unprocessable_entity with a blank translated_body" do
+      expect {
+        post "/api/themes/#{theme.id}/messages",
+          params: { message: { original_body: "なんで私ばっかり家事してるの？", translated_body: "" } },
+          headers: headers
+      }.not_to change(Message, :count)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(JSON.parse(response.body)["errors"]).to be_present
+    end
+
+    it "returns not_found for a theme belonging to a room the current user is not a member of" do
+      other_theme = create(:theme)
+
+      post "/api/themes/#{other_theme.id}/messages",
+        params: { message: { original_body: "テスト", translated_body: "テスト" } },
+        headers: headers
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "returns unauthorized without a token" do
+      post "/api/themes/#{theme.id}/messages", params: { message: { original_body: "テスト", translated_body: "テスト" } }
+
+      expect(response).to have_http_status(:unauthorized)
     end
   end
 end

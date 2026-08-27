@@ -68,6 +68,14 @@
   max-width: 480px;
 }
 
+.message-review-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.message-review-actions > * {
+  flex: 1;
+}
 .form-field {
   display: flex;
   flex-direction: column;
