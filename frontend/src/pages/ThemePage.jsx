@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Header from '@/components/Header'
 import { Button, buttonVariants } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { getToken, clearToken } from '@/lib/auth'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
@@ -148,12 +148,11 @@ function ThemePage() {
           </ul>
         )}
 
-        <form onSubmit={handleSendMessage} className="signup-form">
+        <form onSubmit={handleSendMessage} className="signup-form message-form">
           <div className="form-field">
             <Label htmlFor="originalBody">メッセージを送る</Label>
-            <Input
+            <Textarea
               id="originalBody"
-              type="text"
               value={originalBody}
               onChange={(event) => setOriginalBody(event.target.value)}
               required
