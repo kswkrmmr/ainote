@@ -16,7 +16,9 @@ function ThemePage() {
   const [currentUserId, setCurrentUserId] = useState(null)
   const [notFound, setNotFound] = useState(false)
   const [originalBody, setOriginalBody] = useState('')
-  const [sendErrors, setSendErrors] = useState([])
+  const [translatedBody, setTranslatedBody] = useState(null)
+  const [errors, setErrors] = useState([])
+  const [translating, setTranslating] = useState(false)
   const [sending, setSending] = useState(false)
   const messageListBottomRef = useRef(null)
 
@@ -73,13 +75,13 @@ function ThemePage() {
       })
   }, [id, navigate])
 
-  async function handleSendMessage(event) {
+  async function handlePreview(event) {
     event.preventDefault()
-    setSending(true)
-    setSendErrors([])
+    setTranslating(true)
+    setErrors([])
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/themes/${id}/messages`, {
+      const response = await fetch(`${apiBaseUrl}/api/themes/${id}/messages/preview`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,14 +97,56 @@ function ThemePage() {
           navigate('/login')
           return
         }
-        setSendErrors(data.errors || ['送信に失敗しました'])
+        setErrors(data.errors || ['変換に失敗しました'])
+        return
+      }
+
+      setTranslatedBody(data.translated_body)
+    } catch {
+      setErrors(['通信エラーが発生しました'])
+    } finally {
+      setTranslating(false)
+    }
+  }
+
+  function handleBackToCompose() {
+    setTranslatedBody(null)
+    setErrors([])
+  }
+
+  async function handleSendMessage(event) {
+    event.preventDefault()
+    setSending(true)
+    setErrors([])
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/themes/${id}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({
+          message: { original_body: originalBody, translated_body: translatedBody },
+        }),
+      })
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          clearToken()
+          navigate('/login')
+          return
+        }
+        setErrors(data.errors || ['送信に失敗しました'])
         return
       }
 
       setMessages((prevMessages) => [...prevMessages, data])
       setOriginalBody('')
+      setTranslatedBody(null)
     } catch {
-      setSendErrors(['通信エラーが発生しました'])
+      setErrors(['通信エラーが発生しました'])
     } finally {
       setSending(false)
     }
@@ -148,27 +192,61 @@ function ThemePage() {
           </ul>
         )}
 
-        <form onSubmit={handleSendMessage} className="signup-form message-form">
-          <div className="form-field">
-            <Label htmlFor="originalBody">メッセージを送る</Label>
-            <Textarea
-              id="originalBody"
-              value={originalBody}
-              onChange={(event) => setOriginalBody(event.target.value)}
-              required
-            />
-          </div>
-          {sendErrors.length > 0 && (
-            <ul className="form-errors">
-              {sendErrors.map((sendError) => (
-                <li key={sendError}>{sendError}</li>
-              ))}
-            </ul>
-          )}
-          <Button type="submit" disabled={sending}>
-            {sending ? '送信中...' : '送信する'}
-          </Button>
-        </form>
+        {translatedBody === null ? (
+          <form onSubmit={handlePreview} className="signup-form message-form">
+            <div className="form-field">
+              <Label htmlFor="originalBody">メッセージを送る</Label>
+              <Textarea
+                id="originalBody"
+                value={originalBody}
+                onChange={(event) => setOriginalBody(event.target.value)}
+                required
+              />
+            </div>
+            {errors.length > 0 && (
+              <ul className="form-errors">
+                {errors.map((error) => (
+                  <li key={error}>{error}</li>
+                ))}
+              </ul>
+            )}
+            <Button type="submit" disabled={translating}>
+              {translating ? '変換中...' : 'AIに変換してもらう'}
+            </Button>
+          </form>
+        ) : (
+          <form onSubmit={handleSendMessage} className="signup-form message-form">
+            <div className="form-field">
+              <Label htmlFor="translatedBody">AIによる変換結果（編集できます）</Label>
+              <Textarea
+                id="translatedBody"
+                value={translatedBody}
+                onChange={(event) => setTranslatedBody(event.target.value)}
+                required
+              />
+            </div>
+            {errors.length > 0 && (
+              <ul className="form-errors">
+                {errors.map((error) => (
+                  <li key={error}>{error}</li>
+                ))}
+              </ul>
+            )}
+            <div className="message-review-actions">
+              <Button type="submit" disabled={sending}>
+                {sending ? '送信中...' : '送信する'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleBackToCompose}
+                disabled={sending}
+              >
+                変換前に戻す
+              </Button>
+            </div>
+          </form>
+        )}
 
         {theme && (
           <Link to={`/rooms/${theme.room_id}`} className={buttonVariants({ variant: 'outline' })}>

@@ -7,12 +7,22 @@ module Api
       render json: @theme.messages.order(:created_at).map { |message| message_json(message) }
     end
 
-    def create
-      original_body = message_params[:original_body]
-      translated_body = original_body.present? ? translate(original_body) : nil
+    def preview
+      original_body = preview_params[:original_body]
+
+      if original_body.blank?
+        render json: { errors: [ "本文を入力してください" ] }, status: :unprocessable_entity
+        return
+      end
+
+      translated_body = translate(original_body)
       return if performed?
 
-      message = @theme.messages.build(original_body: original_body, translated_body: translated_body, user: current_user)
+      render json: { translated_body: translated_body }
+    end
+
+    def create
+      message = @theme.messages.build(create_params.merge(user: current_user))
 
       if message.save
         render json: message_json(message), status: :created
@@ -30,8 +40,12 @@ module Api
       nil
     end
 
-    def message_params
+    def preview_params
       params.require(:message).permit(:original_body)
+    end
+
+    def create_params
+      params.require(:message).permit(:original_body, :translated_body)
     end
 
     def set_theme
