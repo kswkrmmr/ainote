@@ -4,6 +4,7 @@ import Header from '@/components/Header'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { createCableConsumer } from '@/lib/cable'
 import { getToken, clearToken } from '@/lib/auth'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
@@ -75,6 +76,33 @@ function ThemePage() {
       })
   }, [id, navigate])
 
+  useEffect(() => {
+    const token = getToken()
+    if (!token) {
+      return
+    }
+
+    const consumer = createCableConsumer(apiBaseUrl, token)
+    const subscription = consumer.subscriptions.create(
+      { channel: 'MessagesChannel', theme_id: id },
+      { received: (data) => appendMessage(data) },
+    )
+
+    return () => {
+      subscription.unsubscribe()
+      consumer.disconnect()
+    }
+  }, [id])
+
+  function appendMessage(newMessage) {
+    setMessages((prevMessages) => {
+      const currentMessages = prevMessages || []
+      return currentMessages.some((message) => message.id === newMessage.id)
+        ? currentMessages
+        : [...currentMessages, newMessage]
+    })
+  }
+
   async function handlePreview(event) {
     event.preventDefault()
     setTranslating(true)
@@ -142,7 +170,7 @@ function ThemePage() {
         return
       }
 
-      setMessages((prevMessages) => [...prevMessages, data])
+      appendMessage(data)
       setOriginalBody('')
       setTranslatedBody(null)
     } catch {

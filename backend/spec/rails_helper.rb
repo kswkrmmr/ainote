@@ -75,4 +75,6 @@ RSpec.configure do |config|
 
   # Allow calling FactoryBot methods (create, build, etc.) without the `FactoryBot.` prefix.
   config.include FactoryBot::Syntax::Methods
+
+  config.include ActionCable::TestHelper
 end

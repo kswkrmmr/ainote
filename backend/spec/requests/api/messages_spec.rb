@@ -143,6 +143,21 @@ RSpec.describe "Api::Messages", type: :request do
       )
     end
 
+    it "broadcasts the created message to the theme's channel" do
+      expect {
+        post "/api/themes/#{theme.id}/messages",
+          params: { message: { original_body: "なんで私ばっかり家事してるの？", translated_body: "穏やかな言い回しに変換された文章" } },
+          headers: headers
+      }.to have_broadcasted_to(theme).from_channel(MessagesChannel).with { |data|
+        expect(data).to eq(
+          "id" => Message.last.id,
+          "user_id" => user.id,
+          "original_body" => "なんで私ばっかり家事してるの？",
+          "translated_body" => "穏やかな言い回しに変換された文章"
+        )
+      }
+    end
+
     it "returns unprocessable_entity with a blank translated_body" do
       expect {
         post "/api/themes/#{theme.id}/messages",
