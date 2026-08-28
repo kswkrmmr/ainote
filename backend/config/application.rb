@@ -42,5 +42,7 @@ module App
     config.api_only = true
 
     config.i18n.default_locale = :ja
+
+    config.action_cable.allowed_request_origins = [ ENV.fetch("FRONTEND_ORIGIN", "http://localhost:5173") ]
   end
 end
