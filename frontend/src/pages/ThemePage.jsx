@@ -21,6 +21,9 @@ function ThemePage() {
   const [errors, setErrors] = useState([])
   const [translating, setTranslating] = useState(false)
   const [sending, setSending] = useState(false)
+  const [summary, setSummary] = useState(null)
+  const [summarizing, setSummarizing] = useState(false)
+  const [summaryErrors, setSummaryErrors] = useState([])
   const messageListBottomRef = useRef(null)
 
   useEffect(() => {
@@ -137,6 +140,35 @@ function ThemePage() {
     }
   }
 
+  async function handleSummarize() {
+    setSummarizing(true)
+    setSummaryErrors([])
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/themes/${id}/summary`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${getToken()}` },
+      })
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          clearToken()
+          navigate('/login')
+          return
+        }
+        setSummaryErrors(data.errors || ['要約に失敗しました'])
+        return
+      }
+
+      setSummary(data)
+    } catch {
+      setSummaryErrors(['通信エラーが発生しました'])
+    } finally {
+      setSummarizing(false)
+    }
+  }
+
   function handleBackToCompose() {
     setTranslatedBody(null)
     setErrors([])
@@ -218,6 +250,73 @@ function ThemePage() {
             ))}
             <li ref={messageListBottomRef} />
           </ul>
+        )}
+
+        {messages && messages.length > 0 && (
+          <div className="message-review-actions">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleSummarize}
+              disabled={summarizing}
+            >
+              {summarizing ? '整理中...' : '会話を整理する'}
+            </Button>
+          </div>
+        )}
+
+        {summaryErrors.length > 0 && (
+          <ul className="form-errors">
+            {summaryErrors.map((error) => (
+              <li key={error}>{error}</li>
+            ))}
+          </ul>
+        )}
+
+        {summary && (
+          <div className="summary-panel">
+            {summary.participants.map((participant) => (
+              <div key={participant.name}>
+                <h3>{participant.name}さんの考え</h3>
+                {participant.points.length > 0 ? (
+                  <ul>
+                    {participant.points.map((point) => (
+                      <li key={point}>{point}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="summary-panel-empty">特になし</p>
+                )}
+              </div>
+            ))}
+            <div>
+              <h3>共通点</h3>
+              {summary.common_points.length > 0 ? (
+                <ul>
+                  {summary.common_points.map((point) => (
+                    <li key={point}>{point}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="summary-panel-empty">特になし</p>
+              )}
+            </div>
+            <div>
+              <h3>未解決の論点</h3>
+              {summary.open_issues.length > 0 ? (
+                <ul>
+                  {summary.open_issues.map((issue) => (
+                    <li key={issue}>{issue}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="summary-panel-empty">特になし</p>
+              )}
+            </div>
+            <Button type="button" variant="outline" onClick={() => setSummary(null)}>
+              閉じる
+            </Button>
+          </div>
         )}
 
         {translatedBody === null ? (

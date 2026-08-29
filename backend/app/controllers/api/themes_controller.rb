@@ -2,7 +2,7 @@ module Api
   class ThemesController < ApplicationController
     before_action :authenticate_user!
     before_action :set_room, only: [ :index, :create ]
-    before_action :set_theme, only: [ :show, :destroy ]
+    before_action :set_theme, only: [ :show, :destroy, :summary ]
 
     def index
       render json: @room.themes.order(:created_at).map { |theme| theme_json(theme) }
@@ -17,6 +17,20 @@ module Api
       head :no_content
     end
 
+    def summary
+      messages = @theme.messages.includes(:user).order(:created_at)
+
+      if messages.empty?
+        render json: { errors: [ "まだメッセージがありません" ] }, status: :unprocessable_entity
+        return
+      end
+
+      result = summarize(messages)
+      return if performed?
+
+      render json: result
+    end
+
     def create
       theme = @room.themes.build(theme_params.merge(user: current_user))
 
@@ -28,6 +42,13 @@ module Api
     end
 
     private
+
+    def summarize(messages)
+      ConversationSummarizer.summarize(messages)
+    rescue StandardError
+      render json: { errors: [ "AIによる要約に失敗しました。もう一度お試しください。" ] }, status: :bad_gateway
+      nil
+    end
 
     def theme_json(theme)
       { id: theme.id, title: theme.title }
