@@ -119,6 +119,9 @@ function RoomListPage() {
               >
                 <div className="room-list-item-header">
                   <Link to={`/rooms/${room.id}`} className="room-list-item-link">
+                    <span className="avatar avatar-partner" aria-hidden="true">
+                      {room.partner_display_name?.charAt(0)}
+                    </span>
                     {room.partner_display_name}
                   </Link>
                   <button

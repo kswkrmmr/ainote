@@ -173,7 +173,14 @@ function RoomDetailPage() {
       <Header />
       <main className="signup-page">
         <h1>ルーム詳細</h1>
-        {room && <p>{room.partner_display_name}さんとのチャットルーム</p>}
+        {room && (
+          <p className="room-detail-partner">
+            <span className="avatar avatar-partner" aria-hidden="true">
+              {room.partner_display_name?.charAt(0)}
+            </span>
+            {room.partner_display_name}さんとのチャットルーム
+          </p>
+        )}
 
         <form onSubmit={handleCreateTheme} className="signup-form">
           <div className="form-field">

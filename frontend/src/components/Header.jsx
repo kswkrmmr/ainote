@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { getToken, clearToken } from '@/lib/auth'
@@ -12,6 +13,23 @@ const headerOutlineButton = cn(
 
 function Header() {
   const loggedIn = Boolean(getToken())
+  const [nickname, setNickname] = useState('')
+
+  useEffect(() => {
+    if (!loggedIn) {
+      return
+    }
+
+    fetch(`${apiBaseUrl}/api/me`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (data) {
+          setNickname(data.nickname)
+        }
+      })
+  }, [loggedIn])
 
   async function handleLogout() {
     const token = getToken()
@@ -34,6 +52,14 @@ function Header() {
       <nav className="app-header-nav">
         {loggedIn ? (
           <>
+            {nickname && (
+              <span className="app-header-account">
+                <span className="avatar avatar-self" aria-hidden="true">
+                  {nickname.charAt(0)}
+                </span>
+                {nickname}さん
+              </span>
+            )}
             <Link to="/rooms" className={headerOutlineButton}>
               ルーム一覧
             </Link>

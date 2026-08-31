@@ -23,6 +23,14 @@
   gap: 12px;
 }
 
+.app-header-account {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text);
+}
+
 .top-page {
   display: flex;
   flex-direction: column;
@@ -145,10 +153,19 @@
 }
 
 .room-list-item-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   text-decoration: none;
   color: var(--text-h);
   font-weight: 600;
   font-size: 18px;
+}
+
+.room-detail-partner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .room-list-invitation {
@@ -268,8 +285,45 @@
   border-radius: 16px;
 }
 
+.message-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  max-width: 85%;
+}
+
+.message-row-self {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.message-row-partner {
+  align-self: flex-start;
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.avatar-self {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.avatar-partner {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
 .message-bubble {
-  max-width: 75%;
   padding: 8px 14px;
   border-radius: 16px;
   text-align: left;
@@ -278,14 +332,12 @@
 }
 
 .message-bubble-self {
-  align-self: flex-end;
   background: var(--primary);
   color: var(--primary-foreground);
   border-bottom-right-radius: 4px;
 }
 
 .message-bubble-partner {
-  align-self: flex-start;
   background: var(--muted);
   color: var(--muted-foreground);
   border-bottom-left-radius: 4px;

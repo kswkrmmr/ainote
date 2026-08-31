@@ -15,6 +15,8 @@ function ThemePage() {
   const [theme, setTheme] = useState(null)
   const [messages, setMessages] = useState(null)
   const [currentUserId, setCurrentUserId] = useState(null)
+  const [currentUserNickname, setCurrentUserNickname] = useState('')
+  const [partnerDisplayName, setPartnerDisplayName] = useState('')
   const [notFound, setNotFound] = useState(false)
   const [originalBody, setOriginalBody] = useState('')
   const [translatedBody, setTranslatedBody] = useState(null)
@@ -44,6 +46,7 @@ function ThemePage() {
       .then((data) => {
         if (data) {
           setCurrentUserId(data.id)
+          setCurrentUserNickname(data.nickname)
         }
       })
 
@@ -80,6 +83,22 @@ function ThemePage() {
   }, [id, navigate])
 
   useEffect(() => {
+    if (!theme) {
+      return
+    }
+
+    fetch(`${apiBaseUrl}/api/rooms/${theme.room_id}`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (data) {
+          setPartnerDisplayName(data.partner_display_name)
+        }
+      })
+  }, [theme])
+
+  useEffect(() => {
     const token = getToken()
     if (!token) {
       return
@@ -96,6 +115,10 @@ function ThemePage() {
       consumer.disconnect()
     }
   }, [id])
+
+  function avatarInitial(name) {
+    return name ? name.charAt(0) : ''
+  }
 
   function appendMessage(newMessage) {
     setMessages((prevMessages) => {
@@ -236,18 +259,33 @@ function ThemePage() {
 
         {messages && messages.length > 0 && (
           <ul className="message-list">
-            {messages.map((message) => (
-              <li
-                key={message.id}
-                className={
-                  message.user_id === currentUserId
-                    ? 'message-bubble message-bubble-self'
-                    : 'message-bubble message-bubble-partner'
-                }
-              >
-                {message.translated_body}
-              </li>
-            ))}
+            {messages.map((message) => {
+              const isSelf = message.user_id === currentUserId
+              return (
+                <li
+                  key={message.id}
+                  className={
+                    isSelf ? 'message-row message-row-self' : 'message-row message-row-partner'
+                  }
+                >
+                  <span
+                    className={isSelf ? 'avatar avatar-self' : 'avatar avatar-partner'}
+                    aria-hidden="true"
+                  >
+                    {avatarInitial(isSelf ? currentUserNickname : partnerDisplayName)}
+                  </span>
+                  <span
+                    className={
+                      isSelf
+                        ? 'message-bubble message-bubble-self'
+                        : 'message-bubble message-bubble-partner'
+                    }
+                  >
+                    {message.translated_body}
+                  </span>
+                </li>
+              )
+            })}
             <li ref={messageListBottomRef} />
           </ul>
         )}
