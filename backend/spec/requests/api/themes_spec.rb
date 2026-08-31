@@ -71,6 +71,63 @@ RSpec.describe "Api::Themes", type: :request do
     end
   end
 
+  describe "POST /api/themes/:id/summary" do
+    let(:theme) { create(:theme, room: room, user: user, title: "家事について") }
+    let(:summary_result) do
+      {
+        "participants" => [
+          { "name" => user.nickname, "points" => [ "家事負担が偏っていると感じている" ] }
+        ],
+        "common_points" => [ "家庭を大切にしたい" ],
+        "open_issues" => [ "平日の家事分担" ]
+      }
+    end
+
+    before { room_member }
+
+    it "returns the AI-generated summary of the theme's messages" do
+      create(:message, theme: theme, user: user)
+      allow(ConversationSummarizer).to receive(:summarize).and_return(summary_result)
+
+      post "/api/themes/#{theme.id}/summary", headers: headers
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)).to eq(summary_result)
+      expect(ConversationSummarizer).to have_received(:summarize)
+    end
+
+    it "returns unprocessable_entity when the theme has no messages" do
+      post "/api/themes/#{theme.id}/summary", headers: headers
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(JSON.parse(response.body)["errors"]).to be_present
+    end
+
+    it "returns bad_gateway when the AI summarization fails" do
+      create(:message, theme: theme, user: user)
+      allow(ConversationSummarizer).to receive(:summarize).and_raise(StandardError, "boom")
+
+      post "/api/themes/#{theme.id}/summary", headers: headers
+
+      expect(response).to have_http_status(:bad_gateway)
+      expect(JSON.parse(response.body)["errors"]).to be_present
+    end
+
+    it "returns not_found for a theme belonging to a room the current user is not a member of" do
+      other_theme = create(:theme)
+
+      post "/api/themes/#{other_theme.id}/summary", headers: headers
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "returns unauthorized without a token" do
+      post "/api/themes/#{theme.id}/summary"
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
+
   describe "GET /api/rooms/:room_id/themes" do
     it "returns the themes for the room in creation order" do
       room_member

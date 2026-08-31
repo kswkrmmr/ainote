@@ -43,6 +43,19 @@ RSpec.describe OpenaiClient do
       expect(stub).to have_been_requested
     end
 
+    it "sends the given response_format in the request body" do
+      stub = stub_chat_completion(model: OpenaiClient::DEFAULT_MODEL, content: '{"ok":true}').with(
+        body: hash_including("response_format" => { "type" => "json_object" })
+      )
+
+      described_class.new.chat(
+        messages: [ { role: "user", content: "hi" } ],
+        response_format: { type: "json_object" }
+      )
+
+      expect(stub).to have_been_requested
+    end
+
     it "raises a RateLimitError when the API responds with 429" do
       stub_request(:post, "https://api.openai.com/v1/chat/completions").to_return(
         status: 429,

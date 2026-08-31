@@ -290,3 +290,30 @@
   color: var(--muted-foreground);
   border-bottom-left-radius: 4px;
 }
+
+.summary-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 480px;
+  padding: 16px 20px;
+  text-align: left;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+
+.summary-panel h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+}
+
+.summary-panel ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.summary-panel-empty {
+  color: var(--muted-foreground);
+}

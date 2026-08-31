@@ -20,6 +20,7 @@ Rails.application.routes.draw do
     get "invitations/:token", to: "invitations#show"
     post "invitations/:token/join", to: "invitations#join"
     resources :themes, only: [ :show, :destroy ] do
+      post :summary, on: :member
       resources :messages, only: [ :index, :create ] do
         post :preview, on: :collection
       end
