@@ -40,7 +40,7 @@ RSpec.describe "Api::Rooms", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(JSON.parse(response.body)).to eq(
-        [ { "id" => my_room_member.room_id, "partner_display_name" => "妻", "awaiting_partner" => true } ]
+        [ { "id" => my_room_member.room_id, "partner_display_name" => "妻", "partner_avatar_url" => nil, "awaiting_partner" => true } ]
       )
     end
 
@@ -51,8 +51,20 @@ RSpec.describe "Api::Rooms", type: :request do
       get "/api/rooms", headers: headers
 
       expect(JSON.parse(response.body)).to eq(
-        [ { "id" => my_room_member.room_id, "partner_display_name" => "妻", "awaiting_partner" => false } ]
+        [ { "id" => my_room_member.room_id, "partner_display_name" => "妻", "partner_avatar_url" => nil, "awaiting_partner" => false } ]
       )
+    end
+
+    it "includes the partner's avatar_url when the partner has one attached" do
+      my_room_member = create(:room_member, user: user, partner_display_name: "妻")
+      partner_member = create(:room_member, room: my_room_member.room)
+      partner_member.user.avatar.attach(
+        io: File.open(Rails.root.join("spec/fixtures/files/avatar.png")), filename: "avatar.png", content_type: "image/png"
+      )
+
+      get "/api/rooms", headers: headers
+
+      expect(JSON.parse(response.body).first["partner_avatar_url"]).to be_present
     end
 
     it "returns unauthorized without a token" do
@@ -70,7 +82,7 @@ RSpec.describe "Api::Rooms", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(JSON.parse(response.body)).to eq(
-        { "id" => room_member.room_id, "partner_display_name" => "父", "awaiting_partner" => true }
+        { "id" => room_member.room_id, "partner_display_name" => "父", "partner_avatar_url" => nil, "awaiting_partner" => true }
       )
     end
 

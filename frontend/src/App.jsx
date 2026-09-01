@@ -7,6 +7,7 @@ import RoomListPage from './pages/RoomListPage'
 import RoomDetailPage from './pages/RoomDetailPage'
 import InvitationPage from './pages/InvitationPage'
 import ThemePage from './pages/ThemePage'
+import ProfilePage from './pages/ProfilePage'
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
       <Route path="/rooms/:id" element={<RoomDetailPage />} />
       <Route path="/invitations/:token" element={<InvitationPage />} />
       <Route path="/themes/:id" element={<ThemePage />} />
+      <Route path="/profile" element={<ProfilePage />} />
     </Routes>
   )
 }
