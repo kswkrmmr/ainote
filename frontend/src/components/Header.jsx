@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import Avatar from '@/components/Avatar'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { getToken, clearToken } from '@/lib/auth'
 import { cn } from '@/lib/utils'
@@ -14,6 +15,7 @@ const headerOutlineButton = cn(
 function Header() {
   const loggedIn = Boolean(getToken())
   const [nickname, setNickname] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState(null)
 
   useEffect(() => {
     if (!loggedIn) {
@@ -27,6 +29,7 @@ function Header() {
       .then((data) => {
         if (data) {
           setNickname(data.nickname)
+          setAvatarUrl(data.avatar_url)
         }
       })
   }, [loggedIn])
@@ -53,12 +56,10 @@ function Header() {
         {loggedIn ? (
           <>
             {nickname && (
-              <span className="app-header-account">
-                <span className="avatar avatar-self" aria-hidden="true">
-                  {nickname.charAt(0)}
-                </span>
+              <Link to="/profile" className="app-header-account">
+                <Avatar imageUrl={avatarUrl} name={nickname} variant="self" />
                 {nickname}さん
-              </span>
+              </Link>
             )}
             <Link to="/rooms" className={headerOutlineButton}>
               ルーム一覧

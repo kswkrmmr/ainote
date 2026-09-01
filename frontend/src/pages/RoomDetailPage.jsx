@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import Avatar from '@/components/Avatar'
 import Header from '@/components/Header'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -175,9 +176,11 @@ function RoomDetailPage() {
         <h1>ルーム詳細</h1>
         {room && (
           <p className="room-detail-partner">
-            <span className="avatar avatar-partner" aria-hidden="true">
-              {room.partner_display_name?.charAt(0)}
-            </span>
+            <Avatar
+              imageUrl={room.partner_avatar_url}
+              name={room.partner_display_name}
+              variant="partner"
+            />
             {room.partner_display_name}さんとのチャットルーム
           </p>
         )}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import Avatar from '@/components/Avatar'
 import Header from '@/components/Header'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { getToken, clearToken } from '@/lib/auth'
@@ -119,9 +120,11 @@ function RoomListPage() {
               >
                 <div className="room-list-item-header">
                   <Link to={`/rooms/${room.id}`} className="room-list-item-link">
-                    <span className="avatar avatar-partner" aria-hidden="true">
-                      {room.partner_display_name?.charAt(0)}
-                    </span>
+                    <Avatar
+                      imageUrl={room.partner_avatar_url}
+                      name={room.partner_display_name}
+                      variant="partner"
+                    />
                     {room.partner_display_name}
                   </Link>
                   <button

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import Avatar from '@/components/Avatar'
 import Header from '@/components/Header'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -16,7 +17,9 @@ function ThemePage() {
   const [messages, setMessages] = useState(null)
   const [currentUserId, setCurrentUserId] = useState(null)
   const [currentUserNickname, setCurrentUserNickname] = useState('')
+  const [currentUserAvatarUrl, setCurrentUserAvatarUrl] = useState(null)
   const [partnerDisplayName, setPartnerDisplayName] = useState('')
+  const [partnerAvatarUrl, setPartnerAvatarUrl] = useState(null)
   const [notFound, setNotFound] = useState(false)
   const [originalBody, setOriginalBody] = useState('')
   const [translatedBody, setTranslatedBody] = useState(null)
@@ -47,6 +50,7 @@ function ThemePage() {
         if (data) {
           setCurrentUserId(data.id)
           setCurrentUserNickname(data.nickname)
+          setCurrentUserAvatarUrl(data.avatar_url)
         }
       })
 
@@ -94,6 +98,7 @@ function ThemePage() {
       .then((data) => {
         if (data) {
           setPartnerDisplayName(data.partner_display_name)
+          setPartnerAvatarUrl(data.partner_avatar_url)
         }
       })
   }, [theme])
@@ -115,10 +120,6 @@ function ThemePage() {
       consumer.disconnect()
     }
   }, [id])
-
-  function avatarInitial(name) {
-    return name ? name.charAt(0) : ''
-  }
 
   function appendMessage(newMessage) {
     setMessages((prevMessages) => {
@@ -268,12 +269,11 @@ function ThemePage() {
                     isSelf ? 'message-row message-row-self' : 'message-row message-row-partner'
                   }
                 >
-                  <span
-                    className={isSelf ? 'avatar avatar-self' : 'avatar avatar-partner'}
-                    aria-hidden="true"
-                  >
-                    {avatarInitial(isSelf ? currentUserNickname : partnerDisplayName)}
-                  </span>
+                  <Avatar
+                    imageUrl={isSelf ? currentUserAvatarUrl : partnerAvatarUrl}
+                    name={isSelf ? currentUserNickname : partnerDisplayName}
+                    variant={isSelf ? 'self' : 'partner'}
+                  />
                   <span
                     className={
                       isSelf

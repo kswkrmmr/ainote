@@ -29,6 +29,7 @@
   gap: 8px;
   font-size: 14px;
   color: var(--text);
+  text-decoration: none;
 }
 
 .top-page {
@@ -89,6 +90,18 @@
   flex-direction: column;
   gap: 4px;
   text-align: left;
+}
+
+.profile-avatar-field {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-avatar-field .avatar {
+  width: 48px;
+  height: 48px;
+  font-size: 18px;
 }
 
 .form-errors {
@@ -311,6 +324,7 @@
   border-radius: 50%;
   font-size: 13px;
   font-weight: 600;
+  object-fit: cover;
 }
 
 .avatar-self {

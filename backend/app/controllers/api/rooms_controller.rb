@@ -3,7 +3,7 @@ module Api
     before_action :authenticate_user!
 
     def index
-      room_members = current_user.room_members.includes(room: :room_members)
+      room_members = current_user.room_members.includes(room: { room_members: { user: { avatar_attachment: :blob } } })
       render json: room_members.map { |member| room_json(member) }
     end
 
@@ -41,9 +41,12 @@ module Api
     private
 
     def room_json(room_member)
+      partner = room_member.room.room_members.find { |member| member.user_id != current_user.id }&.user
+
       {
         id: room_member.room_id,
         partner_display_name: room_member.partner_display_name,
+        partner_avatar_url: partner&.avatar&.attached? ? rails_blob_url(partner.avatar, host: request.base_url) : nil,
         awaiting_partner: room_member.room.room_members.size < 2
       }
     end
