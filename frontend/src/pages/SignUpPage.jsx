@@ -1,13 +1,15 @@
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Header from '@/components/Header'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { setToken } from '@/lib/auth'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
 
 function SignUpPage() {
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const redirect = searchParams.get('redirect')
   const [nickname, setNickname] = useState('')
@@ -16,7 +18,6 @@ function SignUpPage() {
   const [passwordConfirmation, setPasswordConfirmation] = useState('')
   const [errors, setErrors] = useState([])
   const [submitting, setSubmitting] = useState(false)
-  const [registered, setRegistered] = useState(false)
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -34,7 +35,8 @@ function SignUpPage() {
       const data = await response.json()
 
       if (response.ok) {
-        setRegistered(true)
+        setToken(data.token)
+        navigate(redirect?.startsWith('/invitations/') ? redirect : '/rooms')
       } else {
         setErrors(data.errors || ['登録に失敗しました'])
       }
@@ -43,28 +45,6 @@ function SignUpPage() {
     } finally {
       setSubmitting(false)
     }
-  }
-
-  if (registered) {
-    return (
-      <>
-        <Header />
-        <main className="signup-page">
-          <h1>登録が完了しました</h1>
-          <p>{email} で登録が完了しました。</p>
-          <Link
-            to={
-              redirect?.startsWith('/invitations/')
-                ? `/login?redirect=${encodeURIComponent(redirect)}`
-                : '/login'
-            }
-            className={buttonVariants()}
-          >
-            ログインへ進む
-          </Link>
-        </main>
-      </>
-    )
   }
 
   return (
