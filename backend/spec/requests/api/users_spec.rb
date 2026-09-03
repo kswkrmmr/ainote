@@ -8,7 +8,19 @@ RSpec.describe "Api::Users", type: :request do
       }.to change(User, :count).by(1)
 
       expect(response).to have_http_status(:created)
-      expect(JSON.parse(response.body)).to eq({ "id" => User.last.id, "nickname" => "たろう", "email" => "new@example.com" })
+      body = JSON.parse(response.body)
+      expect(body["user"]).to eq({ "id" => User.last.id, "nickname" => "たろう", "email" => "new@example.com" })
+      expect(body["token"]).to be_present
+    end
+
+    it "returns a token that authenticates as the new user" do
+      post "/api/users", params: { user: { nickname: "たろう", email: "new@example.com", password: "password123" } }
+      token = JSON.parse(response.body)["token"]
+
+      get "/api/me", headers: { "Authorization" => "Bearer #{token}" }
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)["email"]).to eq("new@example.com")
     end
 
     it "returns errors with invalid params" do
