@@ -108,7 +108,13 @@ function RoomListPage() {
           ルーム作成
         </Link>
 
-        {rooms && rooms.length === 0 && <p>まだルームがありません。</p>}
+        {rooms && rooms.length === 0 && (
+          <p className="form-hint">
+            まだルームがありません。ルームは「誰と話すか」の単位です。
+            <br />
+            まずは相手とのルームを作り、その中で話したいテーマ(「何を話すか」)を作成すると、相手を招待できます。
+          </p>
+        )}
 
         {rooms && rooms.length > 0 && (
           <ul className="room-list">

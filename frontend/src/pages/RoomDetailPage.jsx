@@ -185,6 +185,14 @@ function RoomDetailPage() {
           </p>
         )}
 
+        {themes.length === 0 && (
+          <p className="form-hint">
+            まだテーマがありません。
+            <br />
+            話したい話題ごとに「テーマ」を作成すると、そこでメッセージのやり取りができます。
+          </p>
+        )}
+
         <form onSubmit={handleCreateTheme} className="signup-form">
           <div className="form-field">
             <Label htmlFor="themeTitle">テーマを作成する</Label>
@@ -238,6 +246,7 @@ function RoomDetailPage() {
 
         {room?.awaiting_partner && (
           <>
+            <p className="form-hint">まだ相手が参加していません。招待URLを発行して送りましょう。</p>
             <Button onClick={handleIssueInvitation} disabled={issuing}>
               {issuing ? '発行中...' : '招待URLを発行する'}
             </Button>
