@@ -25,7 +25,9 @@ function ThemePage() {
   const [translatedBody, setTranslatedBody] = useState(null)
   const [errors, setErrors] = useState([])
   const [translating, setTranslating] = useState(false)
+  const [checking, setChecking] = useState(false)
   const [sending, setSending] = useState(false)
+  const [flaggedWarning, setFlaggedWarning] = useState(false)
   const [summary, setSummary] = useState(null)
   const [summarizing, setSummarizing] = useState(false)
   const [summaryErrors, setSummaryErrors] = useState([])
@@ -196,13 +198,49 @@ function ThemePage() {
   function handleBackToCompose() {
     setTranslatedBody(null)
     setErrors([])
+    setFlaggedWarning(false)
   }
 
   async function handleSendMessage(event) {
     event.preventDefault()
-    setSending(true)
     setErrors([])
 
+    if (!flaggedWarning) {
+      setChecking(true)
+      try {
+        const response = await fetch(`${apiBaseUrl}/api/themes/${id}/messages/check`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${getToken()}`,
+          },
+          body: JSON.stringify({ message: { translated_body: translatedBody } }),
+        })
+        const data = await response.json()
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            clearToken()
+            navigate('/login')
+            return
+          }
+          setErrors(data.errors || ['チェックに失敗しました'])
+          return
+        }
+
+        if (data.flagged) {
+          setFlaggedWarning(true)
+          return
+        }
+      } catch {
+        setErrors(['通信エラーが発生しました'])
+        return
+      } finally {
+        setChecking(false)
+      }
+    }
+
+    setSending(true)
     try {
       const response = await fetch(`${apiBaseUrl}/api/themes/${id}/messages`, {
         method: 'POST',
@@ -229,6 +267,7 @@ function ThemePage() {
       appendMessage(data)
       setOriginalBody('')
       setTranslatedBody(null)
+      setFlaggedWarning(false)
     } catch {
       setErrors(['通信エラーが発生しました'])
     } finally {
@@ -386,10 +425,18 @@ function ThemePage() {
               <Textarea
                 id="translatedBody"
                 value={translatedBody}
-                onChange={(event) => setTranslatedBody(event.target.value)}
+                onChange={(event) => {
+                  setTranslatedBody(event.target.value)
+                  setFlaggedWarning(false)
+                }}
                 required
               />
             </div>
+            {flaggedWarning && (
+              <p className="message-flag-warning">
+                強い言葉が含まれている可能性があります。このまま送信する場合はもう一度「送信する」を押してください。
+              </p>
+            )}
             {errors.length > 0 && (
               <ul className="form-errors">
                 {errors.map((error) => (
@@ -398,8 +445,8 @@ function ThemePage() {
               </ul>
             )}
             <div className="message-review-actions">
-              <Button type="submit" disabled={sending}>
-                {sending ? '送信中...' : '送信する'}
+              <Button type="submit" disabled={sending || checking}>
+                {checking ? '確認中...' : sending ? '送信中...' : '送信する'}
               </Button>
               <Button
                 type="button"

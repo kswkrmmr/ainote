@@ -122,6 +122,61 @@ RSpec.describe "Api::Messages", type: :request do
     end
   end
 
+  describe "POST /api/themes/:theme_id/messages/check" do
+    before do
+      room_member
+      allow(MessageModerator).to receive(:flagged?).and_return(false)
+    end
+
+    it "returns flagged: false when the AI judges the text as not flagged" do
+      post "/api/themes/#{theme.id}/messages/check", params: { message: { translated_body: "助かります、ありがとう" } }, headers: headers
+
+      expect(MessageModerator).to have_received(:flagged?).with("助かります、ありがとう")
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)).to eq({ "flagged" => false })
+    end
+
+    it "returns flagged: true when the AI judges the text as flagged" do
+      allow(MessageModerator).to receive(:flagged?).and_return(true)
+
+      post "/api/themes/#{theme.id}/messages/check", params: { message: { translated_body: "お前のせいだ" } }, headers: headers
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)).to eq({ "flagged" => true })
+    end
+
+    it "returns unprocessable_entity with a blank translated_body without calling the AI" do
+      post "/api/themes/#{theme.id}/messages/check", params: { message: { translated_body: "" } }, headers: headers
+
+      expect(MessageModerator).not_to have_received(:flagged?)
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(JSON.parse(response.body)["errors"]).to be_present
+    end
+
+    it "returns bad_gateway when the AI check fails" do
+      allow(MessageModerator).to receive(:flagged?).and_raise(StandardError, "boom")
+
+      post "/api/themes/#{theme.id}/messages/check", params: { message: { translated_body: "お前のせいだ" } }, headers: headers
+
+      expect(response).to have_http_status(:bad_gateway)
+      expect(JSON.parse(response.body)["errors"]).to be_present
+    end
+
+    it "returns not_found for a theme belonging to a room the current user is not a member of" do
+      other_theme = create(:theme)
+
+      post "/api/themes/#{other_theme.id}/messages/check", params: { message: { translated_body: "テスト" } }, headers: headers
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "returns unauthorized without a token" do
+      post "/api/themes/#{theme.id}/messages/check", params: { message: { translated_body: "テスト" } }
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
+
   describe "POST /api/themes/:theme_id/messages" do
     before { room_member }
 

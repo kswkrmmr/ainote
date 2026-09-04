@@ -24,6 +24,7 @@ Rails.application.routes.draw do
       post :summary, on: :member
       resources :messages, only: [ :index, :create ] do
         post :preview, on: :collection
+        post :check, on: :collection
       end
     end
   end
