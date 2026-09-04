@@ -52,7 +52,7 @@ RSpec.describe "Api::Messages", type: :request do
         post "/api/themes/#{theme.id}/messages/preview", params: { message: { original_body: "なんで私ばっかり家事してるの？" } }, headers: headers
       }.not_to change(Message, :count)
 
-      expect(MessageTranslator).to have_received(:translate).with("なんで私ばっかり家事してるの？")
+      expect(MessageTranslator).to have_received(:translate).with("なんで私ばっかり家事してるの？", partner_display_name: "妻")
       expect(response).to have_http_status(:ok)
       expect(JSON.parse(response.body)).to eq({ "translated_body" => "穏やかな言い回しに変換された文章" })
     end

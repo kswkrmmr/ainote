@@ -35,7 +35,8 @@ module Api
     private
 
     def translate(text)
-      MessageTranslator.translate(text)
+      partner_display_name = @theme.room.room_members.find_by(user: current_user).partner_display_name
+      MessageTranslator.translate(text, partner_display_name: partner_display_name)
     rescue StandardError
       render json: { errors: [ "AI変換に失敗しました。もう一度お試しください。" ] }, status: :bad_gateway
       nil
