@@ -21,6 +21,20 @@ module Api
       render json: { translated_body: translated_body }
     end
 
+    def check
+      translated_body = check_params[:translated_body]
+
+      if translated_body.blank?
+        render json: { errors: [ "本文を入力してください" ] }, status: :unprocessable_entity
+        return
+      end
+
+      flagged = moderate(translated_body)
+      return if performed?
+
+      render json: { flagged: flagged }
+    end
+
     def create
       message = @theme.messages.build(create_params.merge(user: current_user))
 
@@ -42,8 +56,19 @@ module Api
       nil
     end
 
+    def moderate(text)
+      MessageModerator.flagged?(text)
+    rescue StandardError
+      render json: { errors: [ "チェックに失敗しました。もう一度お試しください。" ] }, status: :bad_gateway
+      nil
+    end
+
     def preview_params
       params.require(:message).permit(:original_body)
+    end
+
+    def check_params
+      params.require(:message).permit(:translated_body)
     end
 
     def create_params
