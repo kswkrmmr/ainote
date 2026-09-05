@@ -8,18 +8,23 @@
 @layer base {
   :root {
     --text: #6b6375;
-    --text-h: #08060d;
+    --text-h: #2a2430;
     --bg: #fff;
-    --border: #e5e4e7;
     --code-bg: #f4f3ec;
-    --accent: #0d9488;
-    --accent-bg: rgba(13, 148, 136, 0.1);
-    --accent-border: rgba(13, 148, 136, 0.5);
+    /* ブランドカラー。shadcn側の --accent / --border と衝突しないよう接頭辞を付けている */
+    --brand: #0d9488;
+    --brand-bg: rgba(13, 148, 136, 0.1);
+    --brand-border: rgba(13, 148, 136, 0.5);
+    --partner: #f7ddd6;
+    --partner-text: #9c4a35;
+    --partner-bubble: #fbeeea;
     --social-bg: rgba(244, 243, 236, 0.5);
     --shadow: rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
-    --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-    --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+    /* 英数字はGeist、日本語はフォールバックして OS の標準日本語フォントで表示する */
+    --sans: 'Geist Variable', system-ui, 'Hiragino Sans', 'Yu Gothic', sans-serif;
+    /* 見出しはロゴに合わせた丸ゴシックで、本文との対比をつける */
+    --heading: 'Zen Maru Gothic', 'Geist Variable', system-ui, sans-serif;
     --mono: ui-monospace, Consolas, monospace;
 
     font: 18px/145% var(--sans);
@@ -149,7 +154,7 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
+  --background: #fdfaf6;
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);

@@ -377,8 +377,8 @@
 }
 
 .avatar-partner {
-  background: var(--accent);
-  color: var(--accent-foreground);
+  background: var(--partner);
+  color: var(--partner-text);
 }
 
 .message-bubble {
@@ -396,8 +396,8 @@
 }
 
 .message-bubble-partner {
-  background: var(--muted);
-  color: var(--muted-foreground);
+  background: var(--partner-bubble);
+  color: var(--text-h);
   border-bottom-left-radius: 4px;
 }
 
