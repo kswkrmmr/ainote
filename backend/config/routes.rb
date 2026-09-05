@@ -14,6 +14,7 @@ Rails.application.routes.draw do
     delete "logout", to: "sessions#destroy"
     get "me", to: "me#show"
     patch "me", to: "me#update"
+    post "vent_chats", to: "vent_chats#create"
     resources :rooms, only: [ :index, :show, :create, :destroy ] do
       resources :invitations, only: [ :create ]
       resources :themes, only: [ :index, :create ]
