@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Avatar from '@/components/Avatar'
+import EmptyState from '@/components/EmptyState'
 import Header from '@/components/Header'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -302,7 +303,7 @@ function ThemePage() {
           </p>
         )}
 
-        {messages && messages.length === 0 && <p>まだメッセージはありません。</p>}
+        {messages && messages.length === 0 && <EmptyState>まだメッセージはありません。</EmptyState>}
 
         {messages && messages.length > 0 && (
           <ul className="message-list">

@@ -92,6 +92,18 @@
   text-align: left;
 }
 
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.empty-state-character {
+  width: 72px;
+  height: auto;
+}
+
 .ai-character-row {
   display: flex;
   align-items: center;
