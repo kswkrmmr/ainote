@@ -175,7 +175,7 @@ function RoomDetailPage() {
       <main className="signup-page">
         <h1>ルーム詳細</h1>
         {room && (
-          <p className="room-detail-partner">
+          <p className="partner-heading">
             <Avatar
               imageUrl={room.partner_avatar_url}
               name={room.partner_display_name}
