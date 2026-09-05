@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Avatar from '@/components/Avatar'
+import EmptyState from '@/components/EmptyState'
 import Header from '@/components/Header'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -185,11 +186,11 @@ function RoomDetailPage() {
         )}
 
         {themes.length === 0 && (
-          <p className="form-hint">
+          <EmptyState>
             まだテーマがありません。
             <br />
             話したい話題ごとに「テーマ」を作成すると、そこでメッセージのやり取りができます。
-          </p>
+          </EmptyState>
         )}
 
         <form onSubmit={handleCreateTheme} className="signup-form">
