@@ -213,6 +213,18 @@
   gap: 8px;
 }
 
+.page-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-heading .avatar {
+  width: 48px;
+  height: 48px;
+  font-size: 18px;
+}
+
 .room-list-invitation {
   display: flex;
   flex-direction: column;
