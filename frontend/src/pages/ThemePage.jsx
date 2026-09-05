@@ -294,7 +294,13 @@ function ThemePage() {
     <>
       <Header />
       <main className="signup-page">
-        <h1>メッセージ</h1>
+        <h1>{theme?.title}</h1>
+        {partnerDisplayName && (
+          <p className="partner-heading">
+            <Avatar imageUrl={partnerAvatarUrl} name={partnerDisplayName} variant="partner" />
+            {partnerDisplayName}さんとの会話
+          </p>
+        )}
 
         {messages && messages.length === 0 && <p>まだメッセージはありません。</p>}
 
