@@ -8,6 +8,7 @@ import RoomDetailPage from './pages/RoomDetailPage'
 import InvitationPage from './pages/InvitationPage'
 import ThemePage from './pages/ThemePage'
 import ProfilePage from './pages/ProfilePage'
+import VentChatPage from './pages/VentChatPage'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
       <Route path="/invitations/:token" element={<InvitationPage />} />
       <Route path="/themes/:id" element={<ThemePage />} />
       <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/vent" element={<VentChatPage />} />
     </Routes>
   )
 }

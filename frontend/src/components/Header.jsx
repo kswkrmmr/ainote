@@ -64,6 +64,9 @@ function Header() {
             <Link to="/rooms" className={headerOutlineButton}>
               ルーム一覧
             </Link>
+            <Link to="/vent" className={headerOutlineButton}>
+              気持ちの置き場
+            </Link>
             <Button onClick={handleLogout}>ログアウト</Button>
           </>
         ) : (
