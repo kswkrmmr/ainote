@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { createCableConsumer } from '@/lib/cable'
 import { getToken, clearToken } from '@/lib/auth'
+import aiCharacter from '@/assets/ai-character.png'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
 
@@ -399,7 +400,14 @@ function ThemePage() {
         {translatedBody === null ? (
           <form onSubmit={handlePreview} className="signup-form message-form">
             <div className="form-field">
-              <Label htmlFor="originalBody">メッセージを送る</Label>
+              <div className="ai-character-row">
+                <img
+                  src={aiCharacter}
+                  alt="AI"
+                  className={translating ? 'ai-character ai-character-active' : 'ai-character'}
+                />
+                <Label htmlFor="originalBody">メッセージを送る</Label>
+              </div>
               <Textarea
                 id="originalBody"
                 value={originalBody}
@@ -421,7 +429,14 @@ function ThemePage() {
         ) : (
           <form onSubmit={handleSendMessage} className="signup-form message-form">
             <div className="form-field">
-              <Label htmlFor="translatedBody">AIによる変換結果（編集できます）</Label>
+              <div className="ai-character-row">
+                <img
+                  src={aiCharacter}
+                  alt="AI"
+                  className={checking ? 'ai-character ai-character-active' : 'ai-character'}
+                />
+                <Label htmlFor="translatedBody">AIによる変換結果（編集できます）</Label>
+              </div>
               <Textarea
                 id="translatedBody"
                 value={translatedBody}
