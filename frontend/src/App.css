@@ -92,6 +92,31 @@
   text-align: left;
 }
 
+.ai-character-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-character {
+  width: 28px;
+  height: auto;
+}
+
+.ai-character-active {
+  animation: ai-character-glow 1s ease-in-out infinite;
+}
+
+@keyframes ai-character-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 rgba(45, 155, 150, 0.6));
+  }
+  50% {
+    filter: drop-shadow(0 0 6px rgba(45, 155, 150, 0.8));
+  }
+}
+
 .profile-avatar-field {
   flex-direction: row;
   align-items: center;
