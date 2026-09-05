@@ -173,16 +173,15 @@ function RoomDetailPage() {
     <>
       <Header />
       <main className="signup-page">
-        <h1>ルーム詳細</h1>
         {room && (
-          <p className="partner-heading">
+          <div className="page-heading">
             <Avatar
               imageUrl={room.partner_avatar_url}
               name={room.partner_display_name}
               variant="partner"
             />
-            {room.partner_display_name}さんとのチャットルーム
-          </p>
+            <h1>{room.partner_display_name}さんとのルーム</h1>
+          </div>
         )}
 
         {themes.length === 0 && (
