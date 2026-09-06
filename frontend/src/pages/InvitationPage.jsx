@@ -84,7 +84,7 @@ function InvitationPage() {
       <>
         <Header />
         <main className="signup-page">
-          <h1>招待画面</h1>
+          <h1>招待を確認しています</h1>
         </main>
       </>
     )
