@@ -104,6 +104,29 @@
   height: auto;
 }
 
+/* AIキャラクターが話しているように見せる吹き出し。しっぽはキャラクター側（上）に向ける */
+.empty-state-bubble {
+  position: relative;
+  max-width: 420px;
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: var(--brand-bg);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.empty-state-bubble::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid var(--brand-bg);
+  border-left: 8px solid transparent;
+}
+
 .ai-character-row {
   display: flex;
   align-items: center;

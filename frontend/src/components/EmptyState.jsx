@@ -4,7 +4,7 @@ function EmptyState({ children }) {
   return (
     <div className="empty-state">
       <img src={aiCharacter} alt="" className="empty-state-character" />
-      <p className="form-hint">{children}</p>
+      <p className="empty-state-bubble">{children}</p>
     </div>
   )
 }
