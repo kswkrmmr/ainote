@@ -25,7 +25,7 @@ module Api
         return
       end
 
-      result = summarize(messages)
+      result = summarize(messages, display_names_for(@theme))
       return if performed?
 
       render json: result
@@ -43,11 +43,21 @@ module Api
 
     private
 
-    def summarize(messages)
-      ConversationSummarizer.summarize(messages)
+    def summarize(messages, display_names)
+      ConversationSummarizer.summarize(messages, display_names: display_names)
     rescue StandardError
       render json: { errors: [ "AIによる要約に失敗しました。もう一度お試しください。" ] }, status: :bad_gateway
       nil
+    end
+
+    # 自分は自分のニックネーム、相手は自分が設定した呼び名で表示する
+    def display_names_for(theme)
+      members = theme.room.room_members
+      viewer = members.find { |member| member.user_id == current_user.id }
+
+      members.each_with_object({ current_user.id => current_user.nickname }) do |member, names|
+        names[member.user_id] = viewer.partner_display_name unless member.user_id == current_user.id
+      end
     end
 
     def theme_json(theme)
