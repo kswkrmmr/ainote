@@ -181,7 +181,7 @@ function RoomDetailPage() {
               name={room.partner_display_name}
               variant="partner"
             />
-            <h1>{room.partner_display_name}さんとのルーム</h1>
+            <h1>{room.partner_display_name}とのルーム</h1>
           </div>
         )}
 
