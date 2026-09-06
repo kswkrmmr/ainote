@@ -43,16 +43,26 @@ function TopPage() {
           あいのては、AIが対話を支援することで、感情的にならずに大切な人と話し合えるようになるサービスです。
         </p>
 
-        {checkingSession
-          ? null
-          : currentUser && (
-              <div className="session-status">
-                <p>ようこそ、{currentUser.nickname} さん</p>
-                <Link to="/rooms/new" className={buttonVariants()}>
-                  ルームを作成する
-                </Link>
-              </div>
-            )}
+        {checkingSession ? null : currentUser ? (
+          <div className="session-status">
+            <p>ようこそ、{currentUser.nickname} さん</p>
+            <Link to="/rooms/new" className={buttonVariants()}>
+              ルームを作成する
+            </Link>
+          </div>
+        ) : (
+          <div className="top-page-cta">
+            <Link to="/signup" className={buttonVariants()}>
+              はじめてみる
+            </Link>
+            <p className="form-hint">
+              すでにアカウントをお持ちの方は
+              <Link to="/login" className="text-link">
+                ログイン
+              </Link>
+            </p>
+          </div>
+        )}
       </main>
     </>
   )
