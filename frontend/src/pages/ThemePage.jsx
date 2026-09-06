@@ -299,7 +299,7 @@ function ThemePage() {
         {partnerDisplayName && (
           <p className="partner-heading">
             <Avatar imageUrl={partnerAvatarUrl} name={partnerDisplayName} variant="partner" />
-            {partnerDisplayName}さんとの会話
+            {partnerDisplayName}との会話
           </p>
         )}
 
