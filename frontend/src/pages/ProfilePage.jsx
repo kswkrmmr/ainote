@@ -148,12 +148,20 @@ function ProfilePage() {
               name={nickname}
               variant="self"
             />
-            <Label
-              htmlFor="avatar"
-              className={cn(buttonVariants({ variant: 'outline' }), 'cursor-pointer')}
+            {/*
+              本番のストレージが未整備で、デプロイやスリープ復帰のたびに画像が消えてしまうため、
+              アップロードを一時的に無効化している。外部ストレージへ切り替えたら、
+              下のspanを htmlFor="avatar" の Label に戻して「（調整中）」を削除する。
+            */}
+            <span
+              className={cn(
+                buttonVariants({ variant: 'outline' }),
+                'pointer-events-none opacity-50',
+              )}
             >
               画像を選ぶ
-            </Label>
+            </span>
+            <p className="form-hint">（調整中）</p>
             <input
               id="avatar"
               type="file"
