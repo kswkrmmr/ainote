@@ -21,7 +21,11 @@ RSpec.describe MessageTranslator do
 
   describe ".system_prompt" do
     it "embeds the given partner display name" do
-      expect(described_class.system_prompt("妻")).to include("「妻」という呼び方に置き換えてください")
+      expect(described_class.system_prompt("妻")).to include("「妻」に置き換えます")
+    end
+
+    it "instructs not to add the display name when the original has no word for the partner" do
+      expect(described_class.system_prompt("妻")).to include("「妻」を出力に一切含めません")
     end
   end
 end
