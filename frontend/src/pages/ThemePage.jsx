@@ -362,7 +362,7 @@ function ThemePage() {
           <div className="summary-panel">
             {summary.participants.map((participant) => (
               <div key={participant.name}>
-                <h3>{participant.name}さんの考え</h3>
+                <h3>{participant.name}の考え</h3>
                 {participant.points.length > 0 ? (
                   <ul>
                     {participant.points.map((point) => (

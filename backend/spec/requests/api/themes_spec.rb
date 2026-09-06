@@ -96,6 +96,21 @@ RSpec.describe "Api::Themes", type: :request do
       expect(ConversationSummarizer).to have_received(:summarize)
     end
 
+    it "labels the partner with the viewer's partner_display_name and the viewer with their own nickname" do
+      partner = create(:user, nickname: "田中花子")
+      create(:room_member, room: room, user: partner, partner_display_name: "夫")
+      create(:message, theme: theme, user: user)
+      create(:message, theme: theme, user: partner)
+      allow(ConversationSummarizer).to receive(:summarize).and_return(summary_result)
+
+      post "/api/themes/#{theme.id}/summary", headers: headers
+
+      expect(ConversationSummarizer).to have_received(:summarize).with(
+        anything,
+        display_names: { user.id => user.nickname, partner.id => "妻" }
+      )
+    end
+
     it "returns unprocessable_entity when the theme has no messages" do
       post "/api/themes/#{theme.id}/summary", headers: headers
 

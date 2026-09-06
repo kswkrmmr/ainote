@@ -11,8 +11,12 @@ class ConversationSummarizer
     }
   PROMPT
 
-  def self.summarize(messages)
-    conversation = messages.map { |message| "#{message.user.nickname}: #{message.translated_body}" }.join("\n")
+  # display_names は user_id => 表示名。閲覧者から見た呼び方で要約させるために渡す
+  def self.summarize(messages, display_names: {})
+    conversation = messages.map { |message|
+      name = display_names[message.user_id] || message.user.nickname
+      "#{name}: #{message.translated_body}"
+    }.join("\n")
 
     content = OpenaiClient.new.chat(
       messages: [
