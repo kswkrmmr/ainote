@@ -168,6 +168,19 @@
   gap: 12px;
 }
 
+.top-page-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.text-link {
+  margin-left: 4px;
+  color: var(--brand);
+  text-decoration: underline;
+}
+
 .room-list {
   list-style: none;
   display: flex;
