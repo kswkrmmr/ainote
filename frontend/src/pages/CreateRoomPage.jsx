@@ -15,6 +15,7 @@ function CreateRoomPage() {
   const [errors, setErrors] = useState([])
   const [submitting, setSubmitting] = useState(false)
   const [invitationMessage, setInvitationMessage] = useState(null)
+  const [roomId, setRoomId] = useState(null)
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
@@ -57,6 +58,7 @@ function CreateRoomPage() {
 
       if (invitationResponse.ok) {
         const url = `${window.location.origin}/invitations/${invitationData.token}`
+        setRoomId(roomData.id)
         setInvitationMessage(buildInvitationMessage(url))
       } else {
         setErrors(invitationData.errors || ['招待URLの発行に失敗しました'])
@@ -83,6 +85,10 @@ function CreateRoomPage() {
             <p className="invitation-message">{invitationMessage}</p>
             <Button onClick={handleCopy}>{copied ? 'コピーしました' : 'コピー'}</Button>
           </div>
+          <p className="form-hint">続けて、このルームで話したいテーマを作りましょう。</p>
+          <Link to={`/rooms/${roomId}`} className={buttonVariants()}>
+            このルームを開く
+          </Link>
           <Link to="/rooms" className={buttonVariants({ variant: 'outline' })}>
             ルーム一覧へ
           </Link>
