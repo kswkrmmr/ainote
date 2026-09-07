@@ -90,7 +90,7 @@ jobs:
       - name: Run tests
         run: bundle exec rspec
 
-  frontend_lint:
+  frontend_check:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -115,3 +115,6 @@ jobs:
 
       - name: Check formatting
         run: npm run format:check
+
+      - name: Build
+        run: npm run build
