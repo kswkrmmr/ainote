@@ -1,17 +1,49 @@
 version: 2
 updates:
-- package-ecosystem: bundler
-  directory: "/backend"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 10
-- package-ecosystem: npm
-  directory: "/frontend"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 10
-- package-ecosystem: github-actions
-  directory: "/"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 10
+  - package-ecosystem: bundler
+    directory: "/backend"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    # マイナー・パッチはまとめて1本のPRにする。メジャーはグループから外れ、個別PRで届く
+    groups:
+      backend-development:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+      backend-production:
+        dependency-type: production
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: npm
+    directory: "/frontend"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      frontend-development:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+      frontend-production:
+        dependency-type: production
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
