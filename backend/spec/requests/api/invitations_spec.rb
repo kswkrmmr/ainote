@@ -112,6 +112,21 @@ RSpec.describe "Api::Invitations", type: :request do
       expect(JSON.parse(response.body)["errors"]).to include("すでにこのルームに参加しています")
     end
 
+    it "returns unprocessable_entity when the room is already full" do
+      invitation = create(:invitation, room: room)
+      room_member
+      create(:room_member, room: room, user: create(:user), partner_display_name: "夫")
+
+      expect {
+        post "/api/invitations/#{invitation.token}/join",
+          params: { invitation: { partner_display_name: "夫" } },
+          headers: joiner_headers
+      }.not_to change(RoomMember, :count)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(JSON.parse(response.body)["errors"]).to include(RoomJoiner::ROOM_FULL_ERROR)
+    end
+
     it "returns not_found for a non-existent token" do
       post "/api/invitations/invalid-token/join",
         params: { invitation: { partner_display_name: "夫" } },
