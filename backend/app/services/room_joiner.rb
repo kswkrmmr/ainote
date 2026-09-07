@@ -1,5 +1,9 @@
 class RoomJoiner
+  # ルームは2人で1組。招待URLが転送されても3人目が入れないよう、参加時に定員を確認する
+  CAPACITY = 2
+
   ALREADY_JOINED_ERROR = "すでにこのルームに参加しています".freeze
+  ROOM_FULL_ERROR = "このルームにはすでに2人が参加しているため、この招待は使えません".freeze
 
   Result = Struct.new(:room_member, :errors, keyword_init: true) do
     def success?
@@ -17,10 +21,18 @@ class RoomJoiner
     @partner_display_name = partner_display_name
   end
 
+  # 定員の確認と追加の間に別のリクエストが割り込まないよう、ルームの行をロックしてから判定する
   def call
-    return Result.new(errors: [ ALREADY_JOINED_ERROR ]) if already_joined?
+    room.with_lock { join }
+  end
 
-    room_member = @invitation.room.room_members.build(user: @user, partner_display_name: @partner_display_name)
+  private
+
+  def join
+    return Result.new(errors: [ ALREADY_JOINED_ERROR ]) if already_joined?
+    return Result.new(errors: [ ROOM_FULL_ERROR ]) if full?
+
+    room_member = room.room_members.build(user: @user, partner_display_name: @partner_display_name)
 
     if room_member.save
       Result.new(room_member: room_member)
@@ -29,9 +41,15 @@ class RoomJoiner
     end
   end
 
-  private
+  def room
+    @room ||= @invitation.room
+  end
 
   def already_joined?
-    @user.room_members.exists?(room_id: @invitation.room_id)
+    @user.room_members.exists?(room_id: room.id)
+  end
+
+  def full?
+    room.room_members.count >= CAPACITY
   end
 end
