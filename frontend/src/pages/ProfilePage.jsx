@@ -5,13 +5,13 @@ import Header from '@/components/Header'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { getToken, clearToken } from '@/lib/auth'
+import { getToken } from '@/lib/auth'
+import { useApi } from '@/lib/api'
 import { cn } from '@/lib/utils'
-
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
 
 function ProfilePage() {
   const navigate = useNavigate()
+  const api = useApi()
   const [nickname, setNickname] = useState('')
   const [avatarUrl, setAvatarUrl] = useState(null)
   const [avatarFile, setAvatarFile] = useState(null)
@@ -33,17 +33,8 @@ function ProfilePage() {
       return
     }
 
-    fetch(`${apiBaseUrl}/api/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((response) => {
-        if (response.status === 401) {
-          clearToken()
-          navigate('/login')
-          return null
-        }
-        return response.json()
-      })
+    api('/api/me')
+      .then((response) => (response ? response.json() : null))
       .then((data) => {
         if (data) {
           setNickname(data.nickname)
@@ -52,7 +43,7 @@ function ProfilePage() {
           setInitialEmail(data.email)
         }
       })
-  }, [navigate])
+  }, [api, navigate])
 
   function handleAvatarChange(event) {
     const file = event.target.files?.[0] || null
@@ -101,19 +92,12 @@ function ProfilePage() {
     }
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/me`, {
-        method: 'PATCH',
-        headers: { Authorization: `Bearer ${getToken()}` },
-        body: formData,
-      })
+      const response = await api('/api/me', { method: 'PATCH', body: formData })
+      if (!response) return
+
       const data = await response.json()
 
       if (!response.ok) {
-        if (response.status === 401) {
-          clearToken()
-          navigate('/login')
-          return
-        }
         setErrors(data.errors || ['更新に失敗しました'])
         return
       }

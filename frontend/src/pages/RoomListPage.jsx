@@ -4,14 +4,14 @@ import Avatar from '@/components/Avatar'
 import EmptyState from '@/components/EmptyState'
 import Header from '@/components/Header'
 import { Button, buttonVariants } from '@/components/ui/button'
-import { getToken, clearToken } from '@/lib/auth'
+import { getToken } from '@/lib/auth'
+import { useApi } from '@/lib/api'
 import { buildInvitationMessage } from '@/lib/invitation'
 import { copyText } from '@/lib/clipboard'
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
-
 function RoomListPage() {
   const navigate = useNavigate()
+  const api = useApi()
   const [rooms, setRooms] = useState(null)
   const [issuingRoomId, setIssuingRoomId] = useState(null)
   const [invitationMessages, setInvitationMessages] = useState({})
@@ -26,23 +26,14 @@ function RoomListPage() {
       return
     }
 
-    fetch(`${apiBaseUrl}/api/rooms`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((response) => {
-        if (response.status === 401) {
-          clearToken()
-          navigate('/login')
-          return null
-        }
-        return response.json()
-      })
+    api('/api/rooms')
+      .then((response) => (response ? response.json() : null))
       .then((data) => {
         if (data) {
           setRooms(data)
         }
       })
-  }, [navigate])
+  }, [api, navigate])
 
   async function handleReissueInvitation(roomId) {
     setIssuingRoomId(roomId)
@@ -50,10 +41,9 @@ function RoomListPage() {
     setCopyFailedRoomId(null)
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/rooms/${roomId}/invitations`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${getToken()}` },
-      })
+      const response = await api(`/api/rooms/${roomId}/invitations`, { method: 'POST' })
+      if (!response) return
+
       const data = await response.json()
 
       if (response.ok) {
@@ -62,9 +52,6 @@ function RoomListPage() {
           ...prevMessages,
           [roomId]: buildInvitationMessage(url),
         }))
-      } else if (response.status === 401) {
-        clearToken()
-        navigate('/login')
       }
     } finally {
       setIssuingRoomId(null)
@@ -85,16 +72,8 @@ function RoomListPage() {
     setDeletingRoomId(roomId)
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/rooms/${roomId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${getToken()}` },
-      })
-
-      if (response.status === 401) {
-        clearToken()
-        navigate('/login')
-        return
-      }
+      const response = await api(`/api/rooms/${roomId}`, { method: 'DELETE' })
+      if (!response) return
 
       if (response.ok) {
         setRooms((prevRooms) => prevRooms.filter((room) => room.id !== roomId))

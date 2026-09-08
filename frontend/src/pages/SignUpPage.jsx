@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { setToken } from '@/lib/auth'
-
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
+import { apiFetch } from '@/lib/api'
 
 function SignUpPage() {
   const navigate = useNavigate()
@@ -25,12 +24,10 @@ function SignUpPage() {
     setErrors([])
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/users`, {
+      const response = await apiFetch('/api/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user: { nickname, email, password, password_confirmation: passwordConfirmation },
-        }),
+        auth: false,
+        body: { user: { nickname, email, password, password_confirmation: passwordConfirmation } },
       })
       const data = await response.json()
 

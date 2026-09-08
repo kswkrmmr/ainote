@@ -4,14 +4,14 @@ import Header from '@/components/Header'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { getToken, clearToken } from '@/lib/auth'
+import { getToken } from '@/lib/auth'
+import { useApi } from '@/lib/api'
 import { buildInvitationMessage } from '@/lib/invitation'
 import { copyText } from '@/lib/clipboard'
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
-
 function CreateRoomPage() {
   const navigate = useNavigate()
+  const api = useApi()
   const [partnerDisplayName, setPartnerDisplayName] = useState('')
   const [errors, setErrors] = useState([])
   const [submitting, setSubmitting] = useState(false)
@@ -32,30 +32,24 @@ function CreateRoomPage() {
     setErrors([])
 
     try {
-      const roomResponse = await fetch(`${apiBaseUrl}/api/rooms`, {
+      const roomResponse = await api('/api/rooms', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify({ room: { partner_display_name: partnerDisplayName } }),
+        body: { room: { partner_display_name: partnerDisplayName } },
       })
+      if (!roomResponse) return
+
       const roomData = await roomResponse.json()
 
       if (!roomResponse.ok) {
-        if (roomResponse.status === 401) {
-          clearToken()
-          navigate('/login')
-          return
-        }
         setErrors(roomData.errors || ['ルームの作成に失敗しました'])
         return
       }
 
-      const invitationResponse = await fetch(`${apiBaseUrl}/api/rooms/${roomData.id}/invitations`, {
+      const invitationResponse = await api(`/api/rooms/${roomData.id}/invitations`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${getToken()}` },
       })
+      if (!invitationResponse) return
+
       const invitationData = await invitationResponse.json()
 
       if (invitationResponse.ok) {

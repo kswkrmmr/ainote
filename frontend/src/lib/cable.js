@@ -1,6 +1,7 @@
 import { createConsumer } from '@rails/actioncable'
+import { apiUrl } from './api'
 
-export function createCableConsumer(apiBaseUrl, token) {
-  const cableUrl = `${apiBaseUrl.replace(/^http/, 'ws')}/cable?token=${encodeURIComponent(token)}`
+export function createCableConsumer(token) {
+  const cableUrl = apiUrl(`/cable?token=${encodeURIComponent(token)}`).replace(/^http/, 'ws')
   return createConsumer(cableUrl)
 }

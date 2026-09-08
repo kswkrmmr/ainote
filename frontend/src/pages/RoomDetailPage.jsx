@@ -6,15 +6,15 @@ import Header from '@/components/Header'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { getToken, clearToken } from '@/lib/auth'
+import { getToken } from '@/lib/auth'
+import { useApi } from '@/lib/api'
 import { buildInvitationMessage } from '@/lib/invitation'
 import { copyText } from '@/lib/clipboard'
-
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
 
 function RoomDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const api = useApi()
   const [room, setRoom] = useState(null)
   const [notFound, setNotFound] = useState(false)
   const [invitationMessage, setInvitationMessage] = useState(null)
@@ -35,15 +35,10 @@ function RoomDetailPage() {
       return
     }
 
-    fetch(`${apiBaseUrl}/api/rooms/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    api(`/api/rooms/${id}`)
       .then((response) => {
-        if (response.status === 401) {
-          clearToken()
-          navigate('/login')
-          return null
-        }
+        if (!response) return null
+
         if (response.status === 404) {
           setNotFound(true)
           return null
@@ -56,12 +51,10 @@ function RoomDetailPage() {
         }
       })
 
-    fetch(`${apiBaseUrl}/api/rooms/${id}/themes`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((response) => (response.ok ? response.json() : []))
+    api(`/api/rooms/${id}/themes`)
+      .then((response) => (response?.ok ? response.json() : []))
       .then((data) => setThemes(data))
-  }, [id, navigate])
+  }, [api, id, navigate])
 
   async function handleIssueInvitation() {
     setIssuing(true)
@@ -70,18 +63,14 @@ function RoomDetailPage() {
     setCopyFailed(false)
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/rooms/${id}/invitations`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${getToken()}` },
-      })
+      const response = await api(`/api/rooms/${id}/invitations`, { method: 'POST' })
+      if (!response) return
+
       const data = await response.json()
 
       if (response.ok) {
         const url = `${window.location.origin}/invitations/${data.token}`
         setInvitationMessage(buildInvitationMessage(url))
-      } else if (response.status === 401) {
-        clearToken()
-        navigate('/login')
       } else {
         setErrors(data.errors || ['招待URLの発行に失敗しました'])
       }
@@ -104,22 +93,15 @@ function RoomDetailPage() {
     setThemeErrors([])
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/rooms/${id}/themes`, {
+      const response = await api(`/api/rooms/${id}/themes`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify({ theme: { title: themeTitle } }),
+        body: { theme: { title: themeTitle } },
       })
+      if (!response) return
+
       const data = await response.json()
 
       if (!response.ok) {
-        if (response.status === 401) {
-          clearToken()
-          navigate('/login')
-          return
-        }
         setThemeErrors(data.errors || ['テーマの作成に失敗しました'])
         return
       }
@@ -141,16 +123,8 @@ function RoomDetailPage() {
     setDeletingThemeId(themeId)
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/themes/${themeId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${getToken()}` },
-      })
-
-      if (response.status === 401) {
-        clearToken()
-        navigate('/login')
-        return
-      }
+      const response = await api(`/api/themes/${themeId}`, { method: 'DELETE' })
+      if (!response) return
 
       if (response.ok) {
         setThemes((prevThemes) => prevThemes.filter((theme) => theme.id !== themeId))
