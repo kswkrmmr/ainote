@@ -1,5 +1,7 @@
 module Api
   class ThemesController < ApplicationController
+    include AiErrorHandling
+
     before_action :authenticate_user!
     before_action :set_room, only: [ :index, :create ]
     before_action :set_theme, only: [ :show, :destroy, :summary ]
@@ -44,10 +46,9 @@ module Api
     private
 
     def summarize(messages, display_names)
-      ConversationSummarizer.summarize(messages, display_names: display_names)
-    rescue StandardError
-      render json: { errors: [ "AIによる要約に失敗しました。もう一度お試しください。" ] }, status: :bad_gateway
-      nil
+      handle_ai_error("AIによる要約に失敗しました。もう一度お試しください。") do
+        ConversationSummarizer.summarize(messages, display_names: display_names)
+      end
     end
 
     # 自分は自分のニックネーム、相手は自分が設定した呼び名で表示する

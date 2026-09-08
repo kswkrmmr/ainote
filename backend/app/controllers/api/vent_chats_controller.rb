@@ -1,5 +1,7 @@
 module Api
   class VentChatsController < ApplicationController
+    include AiErrorHandling
+
     before_action :authenticate_user!
 
     def create
@@ -19,10 +21,9 @@ module Api
     private
 
     def generate_reply(history)
-      VentChat.reply(history)
-    rescue StandardError
-      render json: { errors: [ "AIとの通信に失敗しました。もう一度お試しください。" ] }, status: :bad_gateway
-      nil
+      handle_ai_error("AIとの通信に失敗しました。もう一度お試しください。") do
+        VentChat.reply(history)
+      end
     end
 
     def chat_history

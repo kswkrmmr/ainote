@@ -74,6 +74,15 @@ RSpec.describe "Api::Messages", type: :request do
       expect(JSON.parse(response.body)["errors"]).to be_present
     end
 
+    it "logs the underlying exception when the AI translation fails" do
+      allow(MessageTranslator).to receive(:translate).and_raise(StandardError, "boom")
+      allow(Rails.logger).to receive(:error)
+
+      post "/api/themes/#{theme.id}/messages/preview", params: { message: { original_body: "なんで私ばっかり家事してるの？" } }, headers: headers
+
+      expect(Rails.logger).to have_received(:error).with(/StandardError: boom/)
+    end
+
     it "returns not_found for a theme belonging to a room the current user is not a member of" do
       other_theme = create(:theme)
 
