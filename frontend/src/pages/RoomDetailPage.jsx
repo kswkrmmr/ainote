@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { getToken, clearToken } from '@/lib/auth'
 import { buildInvitationMessage } from '@/lib/invitation'
+import { copyText } from '@/lib/clipboard'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
 
@@ -19,8 +20,9 @@ function RoomDetailPage() {
   const [invitationMessage, setInvitationMessage] = useState(null)
   const [issuing, setIssuing] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [copyFailed, setCopyFailed] = useState(false)
   const [errors, setErrors] = useState([])
-  const [themes, setThemes] = useState([])
+  const [themes, setThemes] = useState(null)
   const [themeTitle, setThemeTitle] = useState('')
   const [themeErrors, setThemeErrors] = useState([])
   const [creatingTheme, setCreatingTheme] = useState(false)
@@ -65,6 +67,7 @@ function RoomDetailPage() {
     setIssuing(true)
     setErrors([])
     setCopied(false)
+    setCopyFailed(false)
 
     try {
       const response = await fetch(`${apiBaseUrl}/api/rooms/${id}/invitations`, {
@@ -90,8 +93,9 @@ function RoomDetailPage() {
   }
 
   async function handleCopy() {
-    await navigator.clipboard.writeText(invitationMessage)
-    setCopied(true)
+    const succeeded = await copyText(invitationMessage)
+    setCopied(succeeded)
+    setCopyFailed(!succeeded)
   }
 
   async function handleCreateTheme(event) {
@@ -120,7 +124,7 @@ function RoomDetailPage() {
         return
       }
 
-      setThemes((prevThemes) => [...prevThemes, data])
+      setThemes((prevThemes) => [...(prevThemes || []), data])
       setThemeTitle('')
     } catch {
       setThemeErrors(['通信エラーが発生しました'])
@@ -185,7 +189,7 @@ function RoomDetailPage() {
           </div>
         )}
 
-        {themes.length === 0 && (
+        {themes && themes.length === 0 && (
           <EmptyState>
             まだテーマがありません。
             <br />
@@ -216,7 +220,7 @@ function RoomDetailPage() {
           </Button>
         </form>
 
-        {themes.length > 0 && (
+        {themes && themes.length > 0 && (
           <ul className="theme-list">
             {themes.map((theme) => (
               <li
@@ -263,6 +267,11 @@ function RoomDetailPage() {
               <div className="invitation-url">
                 <p className="invitation-message">{invitationMessage}</p>
                 <Button onClick={handleCopy}>{copied ? 'コピーしました' : 'コピー'}</Button>
+                {copyFailed && (
+                  <p className="form-hint">
+                    コピーできませんでした。上のメッセージを選択してコピーしてください。
+                  </p>
+                )}
               </div>
             )}
           </>
