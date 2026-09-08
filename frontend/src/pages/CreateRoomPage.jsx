@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { getToken, clearToken } from '@/lib/auth'
 import { buildInvitationMessage } from '@/lib/invitation'
+import { copyText } from '@/lib/clipboard'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
 
@@ -17,6 +18,7 @@ function CreateRoomPage() {
   const [invitationMessage, setInvitationMessage] = useState(null)
   const [roomId, setRoomId] = useState(null)
   const [copied, setCopied] = useState(false)
+  const [copyFailed, setCopyFailed] = useState(false)
 
   useEffect(() => {
     if (!getToken()) {
@@ -71,8 +73,9 @@ function CreateRoomPage() {
   }
 
   async function handleCopy() {
-    await navigator.clipboard.writeText(invitationMessage)
-    setCopied(true)
+    const succeeded = await copyText(invitationMessage)
+    setCopied(succeeded)
+    setCopyFailed(!succeeded)
   }
 
   if (invitationMessage) {
@@ -84,6 +87,11 @@ function CreateRoomPage() {
           <div className="invitation-url">
             <p className="invitation-message">{invitationMessage}</p>
             <Button onClick={handleCopy}>{copied ? 'コピーしました' : 'コピー'}</Button>
+            {copyFailed && (
+              <p className="form-hint">
+                コピーできませんでした。上のメッセージを選択してコピーしてください。
+              </p>
+            )}
           </div>
           <p className="form-hint">続けて、このルームで話したいテーマを作りましょう。</p>
           <Link to={`/rooms/${roomId}`} className={buttonVariants()}>

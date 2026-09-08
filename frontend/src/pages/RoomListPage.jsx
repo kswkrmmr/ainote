@@ -6,6 +6,7 @@ import Header from '@/components/Header'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { getToken, clearToken } from '@/lib/auth'
 import { buildInvitationMessage } from '@/lib/invitation'
+import { copyText } from '@/lib/clipboard'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
 
@@ -15,6 +16,7 @@ function RoomListPage() {
   const [issuingRoomId, setIssuingRoomId] = useState(null)
   const [invitationMessages, setInvitationMessages] = useState({})
   const [copiedRoomId, setCopiedRoomId] = useState(null)
+  const [copyFailedRoomId, setCopyFailedRoomId] = useState(null)
   const [deletingRoomId, setDeletingRoomId] = useState(null)
 
   useEffect(() => {
@@ -45,6 +47,7 @@ function RoomListPage() {
   async function handleReissueInvitation(roomId) {
     setIssuingRoomId(roomId)
     setCopiedRoomId(null)
+    setCopyFailedRoomId(null)
 
     try {
       const response = await fetch(`${apiBaseUrl}/api/rooms/${roomId}/invitations`, {
@@ -69,8 +72,9 @@ function RoomListPage() {
   }
 
   async function handleCopy(roomId) {
-    await navigator.clipboard.writeText(invitationMessages[roomId])
-    setCopiedRoomId(roomId)
+    const succeeded = await copyText(invitationMessages[roomId])
+    setCopiedRoomId(succeeded ? roomId : null)
+    setCopyFailedRoomId(succeeded ? null : roomId)
   }
 
   async function handleDeleteRoom(roomId) {
@@ -168,6 +172,11 @@ function RoomListPage() {
                         <Button onClick={() => handleCopy(room.id)}>
                           {copiedRoomId === room.id ? 'コピーしました' : 'コピー'}
                         </Button>
+                        {copyFailedRoomId === room.id && (
+                          <p className="form-hint">
+                            コピーできませんでした。上のメッセージを選択してコピーしてください。
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>
