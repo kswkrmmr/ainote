@@ -24,6 +24,21 @@ RSpec.describe OpenaiClient do
     )
   end
 
+  describe "#initialize" do
+    it "configures a request timeout and retry count instead of the gem defaults" do
+      allow(OpenAI::Client).to receive(:new).and_call_original
+
+      described_class.new
+
+      expect(OpenAI::Client).to have_received(:new).with(
+        hash_including(
+          timeout: OpenaiClient::REQUEST_TIMEOUT_SECONDS,
+          max_retries: OpenaiClient::MAX_RETRIES
+        )
+      )
+    end
+  end
+
   describe "#chat" do
     it "returns the message content from a successful response" do
       stub_chat_completion(model: OpenaiClient::DEFAULT_MODEL, content: "変換後の文章")

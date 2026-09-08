@@ -1,5 +1,7 @@
 module Api
   class MessagesController < ApplicationController
+    include AiErrorHandling
+
     before_action :authenticate_user!
     before_action :set_theme
 
@@ -49,18 +51,16 @@ module Api
     private
 
     def translate(text)
-      partner_display_name = @theme.room.room_members.find_by(user: current_user).partner_display_name
-      MessageTranslator.translate(text, partner_display_name: partner_display_name)
-    rescue StandardError
-      render json: { errors: [ "AI変換に失敗しました。もう一度お試しください。" ] }, status: :bad_gateway
-      nil
+      handle_ai_error("AI変換に失敗しました。もう一度お試しください。") do
+        partner_display_name = @theme.room.room_members.find_by(user: current_user).partner_display_name
+        MessageTranslator.translate(text, partner_display_name: partner_display_name)
+      end
     end
 
     def moderate(text)
-      MessageModerator.flagged?(text)
-    rescue StandardError
-      render json: { errors: [ "チェックに失敗しました。もう一度お試しください。" ] }, status: :bad_gateway
-      nil
+      handle_ai_error("チェックに失敗しました。もう一度お試しください。") do
+        MessageModerator.flagged?(text)
+      end
     end
 
     def preview_params
