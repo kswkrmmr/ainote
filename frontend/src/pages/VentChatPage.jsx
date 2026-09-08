@@ -5,12 +5,12 @@ import Header from '@/components/Header'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { getToken, clearToken } from '@/lib/auth'
-
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
+import { getToken } from '@/lib/auth'
+import { useApi } from '@/lib/api'
 
 function VentChatPage() {
   const navigate = useNavigate()
+  const api = useApi()
   const [currentUserNickname, setCurrentUserNickname] = useState('')
   const [currentUserAvatarUrl, setCurrentUserAvatarUrl] = useState(null)
   const [history, setHistory] = useState([])
@@ -30,17 +30,15 @@ function VentChatPage() {
       return
     }
 
-    fetch(`${apiBaseUrl}/api/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((response) => (response.ok ? response.json() : null))
+    api('/api/me')
+      .then((response) => (response?.ok ? response.json() : null))
       .then((data) => {
         if (data) {
           setCurrentUserNickname(data.nickname)
           setCurrentUserAvatarUrl(data.avatar_url)
         }
       })
-  }, [navigate])
+  }, [api, navigate])
 
   async function handleSend(event) {
     event.preventDefault()
@@ -55,22 +53,15 @@ function VentChatPage() {
     setErrors([])
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/vent_chats`, {
+      const response = await api('/api/vent_chats', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify({ messages: nextHistory }),
+        body: { messages: nextHistory },
       })
+      if (!response) return
+
       const data = await response.json()
 
       if (!response.ok) {
-        if (response.status === 401) {
-          clearToken()
-          navigate('/login')
-          return
-        }
         setErrors(data.errors || ['送信に失敗しました'])
         return
       }

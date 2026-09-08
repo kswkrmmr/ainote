@@ -4,13 +4,13 @@ import Header from '@/components/Header'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { getToken, clearToken } from '@/lib/auth'
-
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
+import { getToken } from '@/lib/auth'
+import { apiFetch, useApi } from '@/lib/api'
 
 function InvitationPage() {
   const { token } = useParams()
   const navigate = useNavigate()
+  const api = useApi()
   const [invitation, setInvitation] = useState(null)
   const [error, setError] = useState(null)
   const [partnerDisplayName, setPartnerDisplayName] = useState('')
@@ -18,7 +18,8 @@ function InvitationPage() {
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    fetch(`${apiBaseUrl}/api/invitations/${token}`)
+    // 招待の確認は未ログインでも行うため、認証ヘッダなしで呼ぶ
+    apiFetch(`/api/invitations/${token}`, { auth: false })
       .then(async (response) => {
         const data = await response.json()
         if (response.ok) {
@@ -36,22 +37,15 @@ function InvitationPage() {
     setJoinErrors([])
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/invitations/${token}/join`, {
+      const response = await api(`/api/invitations/${token}/join`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify({ invitation: { partner_display_name: partnerDisplayName } }),
+        body: { invitation: { partner_display_name: partnerDisplayName } },
       })
+      if (!response) return
+
       const data = await response.json()
 
       if (!response.ok) {
-        if (response.status === 401) {
-          clearToken()
-          navigate('/login')
-          return
-        }
         setJoinErrors(data.errors || ['参加に失敗しました'])
         return
       }

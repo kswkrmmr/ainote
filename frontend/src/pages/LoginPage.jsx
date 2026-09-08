@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { setToken } from '@/lib/auth'
-
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
+import { apiFetch } from '@/lib/api'
 
 function LoginPage() {
   const navigate = useNavigate()
@@ -23,10 +22,11 @@ function LoginPage() {
     setErrors([])
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/login`, {
+      // ログイン失敗も401で返るため、自動リダイレクトしない apiFetch を使う
+      const response = await apiFetch('/api/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        auth: false,
+        body: { email, password },
       })
       const data = await response.json()
 

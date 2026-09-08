@@ -7,14 +7,14 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { createCableConsumer } from '@/lib/cable'
-import { getToken, clearToken } from '@/lib/auth'
+import { getToken } from '@/lib/auth'
+import { useApi } from '@/lib/api'
 import aiCharacter from '@/assets/ai-character.png'
-
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
 
 function ThemePage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const api = useApi()
   const [theme, setTheme] = useState(null)
   const [messages, setMessages] = useState(null)
   const [currentUserId, setCurrentUserId] = useState(null)
@@ -46,10 +46,8 @@ function ThemePage() {
       return
     }
 
-    fetch(`${apiBaseUrl}/api/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((response) => (response.ok ? response.json() : null))
+    api('/api/me')
+      .then((response) => (response?.ok ? response.json() : null))
       .then((data) => {
         if (data) {
           setCurrentUserId(data.id)
@@ -58,15 +56,10 @@ function ThemePage() {
         }
       })
 
-    fetch(`${apiBaseUrl}/api/themes/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    api(`/api/themes/${id}`)
       .then((response) => {
-        if (response.status === 401) {
-          clearToken()
-          navigate('/login')
-          return null
-        }
+        if (!response) return null
+
         if (response.status === 404) {
           setNotFound(true)
           return null
@@ -79,33 +72,29 @@ function ThemePage() {
         }
       })
 
-    fetch(`${apiBaseUrl}/api/themes/${id}/messages`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((response) => (response.ok ? response.json() : null))
+    api(`/api/themes/${id}/messages`)
+      .then((response) => (response?.ok ? response.json() : null))
       .then((data) => {
         if (data) {
           setMessages(data)
         }
       })
-  }, [id, navigate])
+  }, [api, id, navigate])
 
   useEffect(() => {
     if (!theme) {
       return
     }
 
-    fetch(`${apiBaseUrl}/api/rooms/${theme.room_id}`, {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
-      .then((response) => (response.ok ? response.json() : null))
+    api(`/api/rooms/${theme.room_id}`)
+      .then((response) => (response?.ok ? response.json() : null))
       .then((data) => {
         if (data) {
           setPartnerDisplayName(data.partner_display_name)
           setPartnerAvatarUrl(data.partner_avatar_url)
         }
       })
-  }, [theme])
+  }, [api, theme])
 
   useEffect(() => {
     const token = getToken()
@@ -113,7 +102,7 @@ function ThemePage() {
       return
     }
 
-    const consumer = createCableConsumer(apiBaseUrl, token)
+    const consumer = createCableConsumer(token)
     const subscription = consumer.subscriptions.create(
       { channel: 'MessagesChannel', theme_id: id },
       { received: (data) => appendMessage(data) },
@@ -140,22 +129,15 @@ function ThemePage() {
     setErrors([])
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/themes/${id}/messages/preview`, {
+      const response = await api(`/api/themes/${id}/messages/preview`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify({ message: { original_body: originalBody } }),
+        body: { message: { original_body: originalBody } },
       })
+      if (!response) return
+
       const data = await response.json()
 
       if (!response.ok) {
-        if (response.status === 401) {
-          clearToken()
-          navigate('/login')
-          return
-        }
         setErrors(data.errors || ['変換に失敗しました'])
         return
       }
@@ -173,18 +155,12 @@ function ThemePage() {
     setSummaryErrors([])
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/themes/${id}/summary`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${getToken()}` },
-      })
+      const response = await api(`/api/themes/${id}/summary`, { method: 'POST' })
+      if (!response) return
+
       const data = await response.json()
 
       if (!response.ok) {
-        if (response.status === 401) {
-          clearToken()
-          navigate('/login')
-          return
-        }
         setSummaryErrors(data.errors || ['要約に失敗しました'])
         return
       }
@@ -210,22 +186,15 @@ function ThemePage() {
     if (!flaggedWarning) {
       setChecking(true)
       try {
-        const response = await fetch(`${apiBaseUrl}/api/themes/${id}/messages/check`, {
+        const response = await api(`/api/themes/${id}/messages/check`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${getToken()}`,
-          },
-          body: JSON.stringify({ message: { translated_body: translatedBody } }),
+          body: { message: { translated_body: translatedBody } },
         })
+        if (!response) return
+
         const data = await response.json()
 
         if (!response.ok) {
-          if (response.status === 401) {
-            clearToken()
-            navigate('/login')
-            return
-          }
           setErrors(data.errors || ['チェックに失敗しました'])
           return
         }
@@ -244,24 +213,15 @@ function ThemePage() {
 
     setSending(true)
     try {
-      const response = await fetch(`${apiBaseUrl}/api/themes/${id}/messages`, {
+      const response = await api(`/api/themes/${id}/messages`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify({
-          message: { original_body: originalBody, translated_body: translatedBody },
-        }),
+        body: { message: { original_body: originalBody, translated_body: translatedBody } },
       })
+      if (!response) return
+
       const data = await response.json()
 
       if (!response.ok) {
-        if (response.status === 401) {
-          clearToken()
-          navigate('/login')
-          return
-        }
         setErrors(data.errors || ['送信に失敗しました'])
         return
       }

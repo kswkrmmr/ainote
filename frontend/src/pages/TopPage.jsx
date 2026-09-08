@@ -5,8 +5,7 @@ import heroImage from '../assets/hero.png'
 import Header from '@/components/Header'
 import { buttonVariants } from '@/components/ui/button'
 import { getToken, clearToken } from '@/lib/auth'
-
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
+import { apiFetch } from '@/lib/api'
 
 function TopPage() {
   const [currentUser, setCurrentUser] = useState(null)
@@ -19,9 +18,8 @@ function TopPage() {
       return
     }
 
-    fetch(`${apiBaseUrl}/api/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    // トップは未ログインでも見える画面なので、401でもログイン画面へは飛ばさない
+    apiFetch('/api/me')
       .then((response) => (response.ok ? response.json() : null))
       .then((data) => {
         if (data) {
