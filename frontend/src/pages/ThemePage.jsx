@@ -360,13 +360,13 @@ function ThemePage() {
 
         {summary && (
           <div className="summary-panel">
-            {summary.participants.map((participant) => (
-              <div key={participant.name}>
+            {summary.participants.map((participant, participantIndex) => (
+              <div key={participantIndex}>
                 <h3>{participant.name}の考え</h3>
                 {participant.points.length > 0 ? (
                   <ul>
-                    {participant.points.map((point) => (
-                      <li key={point}>{point}</li>
+                    {participant.points.map((point, pointIndex) => (
+                      <li key={pointIndex}>{point}</li>
                     ))}
                   </ul>
                 ) : (
@@ -378,8 +378,8 @@ function ThemePage() {
               <h3>共通点</h3>
               {summary.common_points.length > 0 ? (
                 <ul>
-                  {summary.common_points.map((point) => (
-                    <li key={point}>{point}</li>
+                  {summary.common_points.map((point, pointIndex) => (
+                    <li key={pointIndex}>{point}</li>
                   ))}
                 </ul>
               ) : (
@@ -390,8 +390,8 @@ function ThemePage() {
               <h3>未解決の論点</h3>
               {summary.open_issues.length > 0 ? (
                 <ul>
-                  {summary.open_issues.map((issue) => (
-                    <li key={issue}>{issue}</li>
+                  {summary.open_issues.map((issue, issueIndex) => (
+                    <li key={issueIndex}>{issue}</li>
                   ))}
                 </ul>
               ) : (

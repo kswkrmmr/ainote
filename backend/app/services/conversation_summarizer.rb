@@ -26,6 +26,40 @@ class ConversationSummarizer
       response_format: { type: "json_object" }
     )
 
-    JSON.parse(content)
+    normalize(JSON.parse(content))
   end
+
+  # AIの出力はキーの欠落や型崩れがありうる。画面はこの3つのキーと配列があることを前提に
+  # 描画するため、欠けていれば空配列を補い、想定外の型は落としてから返す
+  def self.normalize(parsed)
+    parsed = {} unless parsed.is_a?(Hash)
+
+    {
+      "participants" => normalize_participants(parsed["participants"]),
+      "common_points" => normalize_strings(parsed["common_points"]),
+      "open_issues" => normalize_strings(parsed["open_issues"])
+    }
+  end
+  private_class_method :normalize
+
+  def self.normalize_participants(participants)
+    return [] unless participants.is_a?(Array)
+
+    participants.filter_map do |participant|
+      next unless participant.is_a?(Hash)
+
+      name = participant["name"]
+      next unless name.is_a?(String) && name.strip.present?
+
+      { "name" => name.strip, "points" => normalize_strings(participant["points"]) }
+    end
+  end
+  private_class_method :normalize_participants
+
+  def self.normalize_strings(values)
+    return [] unless values.is_a?(Array)
+
+    values.grep(String).map(&:strip).reject(&:empty?)
+  end
+  private_class_method :normalize_strings
 end

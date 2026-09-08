@@ -69,4 +69,59 @@ RSpec.describe ConversationSummarizer do
       )
     end
   end
+  describe "AIの応答が想定した形でない場合" do
+    def summarize_with(response)
+      theme = create(:theme)
+      messages = [ create(:message, theme: theme, translated_body: "話したいことがあります") ]
+
+      client = instance_double(OpenaiClient)
+      allow(OpenaiClient).to receive(:new).and_return(client)
+      allow(client).to receive(:chat).and_return(response)
+
+      described_class.summarize(messages)
+    end
+
+    it "fills in empty arrays when keys are missing" do
+      expect(summarize_with("{}")).to eq(
+        { "participants" => [], "common_points" => [], "open_issues" => [] }
+      )
+    end
+
+    it "fills in empty arrays when the values are not arrays" do
+      response = { "participants" => nil, "common_points" => "なし", "open_issues" => 0 }.to_json
+
+      expect(summarize_with(response)).to eq(
+        { "participants" => [], "common_points" => [], "open_issues" => [] }
+      )
+    end
+
+    it "drops participants without a usable name and non-string points" do
+      response = {
+        "participants" => [
+          { "name" => "たろう", "points" => [ "話し合いたい", nil, 42, "  " ] },
+          { "name" => "  ", "points" => [ "名前がないので落とす" ] },
+          { "points" => [ "nameキーがないので落とす" ] },
+          "文字列なので落とす"
+        ],
+        "common_points" => [ "家庭を大切にしたい", nil ],
+        "open_issues" => []
+      }.to_json
+
+      expect(summarize_with(response)).to eq(
+        {
+          "participants" => [ { "name" => "たろう", "points" => [ "話し合いたい" ] } ],
+          "common_points" => [ "家庭を大切にしたい" ],
+          "open_issues" => []
+        }
+      )
+    end
+
+    it "supplies points as an empty array when the key is missing" do
+      response = { "participants" => [ { "name" => "たろう" } ] }.to_json
+
+      expect(summarize_with(response)["participants"]).to eq(
+        [ { "name" => "たろう", "points" => [] } ]
+      )
+    end
+  end
 end
