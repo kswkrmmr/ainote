@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import Avatar from '@/components/Avatar'
 import EmptyState from '@/components/EmptyState'
 import Header from '@/components/Header'
+import LineShareButton from '@/components/LineShareButton'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { getToken } from '@/lib/auth'
 import { useApi } from '@/lib/api'
@@ -148,9 +149,12 @@ function RoomListPage() {
                     {invitationMessages[room.id] && (
                       <div className="invitation-url">
                         <p className="invitation-message">{invitationMessages[room.id]}</p>
-                        <Button onClick={() => handleCopy(room.id)}>
-                          {copiedRoomId === room.id ? 'コピーしました' : 'コピー'}
-                        </Button>
+                        <div className="invitation-actions">
+                          <LineShareButton message={invitationMessages[room.id]} />
+                          <Button variant="outline" onClick={() => handleCopy(room.id)}>
+                            {copiedRoomId === room.id ? 'コピーしました' : 'コピー'}
+                          </Button>
+                        </div>
                         {copyFailedRoomId === room.id && (
                           <p className="form-hint">
                             コピーできませんでした。上のメッセージを選択してコピーしてください。
