@@ -48,3 +48,14 @@ export function useApi() {
     [navigate],
   )
 }
+
+// サーバーが500を返すとき、このAPIはpublic/500.htmlを持たないため本文が空になる。
+// response.json() が例外になり「通信エラー」と誤表示されるのを避けるため、
+// JSONとして読めなければ null を返す。
+export async function readJson(response) {
+  try {
+    return await response.json()
+  } catch {
+    return null
+  }
+}

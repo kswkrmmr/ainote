@@ -18,3 +18,8 @@ cloudflare:
   region: auto
   # R2はパス形式のURL(<endpoint>/<bucket>/<key>)のみ対応
   force_path_style: true
+  # aws-sdk-s3 はアップロード時に x-amz-sdk-checksum-algorithm / x-amz-checksum-crc32 を
+  # 自動付与するが、R2はこれに対応しておらず500になる。AWSが要求する場合のみ送るようにする。
+  # 整合性チェックは Active Storage が付ける Content-MD5 で担保される。
+  request_checksum_calculation: when_required
+  response_checksum_validation: when_required
