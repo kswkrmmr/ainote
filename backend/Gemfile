@@ -27,6 +27,9 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
+# S3互換ストレージ(Cloudflare R2)にActive Storageの添付を保存するために必要
+gem "aws-sdk-s3", require: false
+
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
 gem "rack-cors"
 
