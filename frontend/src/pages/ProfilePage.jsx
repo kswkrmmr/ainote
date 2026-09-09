@@ -6,7 +6,7 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { getToken } from '@/lib/auth'
-import { useApi } from '@/lib/api'
+import { useApi, readJson } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 function ProfilePage() {
@@ -95,10 +95,10 @@ function ProfilePage() {
       const response = await api('/api/me', { method: 'PATCH', body: formData })
       if (!response) return
 
-      const data = await response.json()
+      const data = await readJson(response)
 
       if (!response.ok) {
-        setErrors(data.errors || ['更新に失敗しました'])
+        setErrors(data?.errors || [`更新に失敗しました（エラー ${response.status}）`])
         return
       }
 
