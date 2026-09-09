@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Header from '@/components/Header'
+import LineShareButton from '@/components/LineShareButton'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -80,7 +81,12 @@ function CreateRoomPage() {
           <h1>ルームを作成しました</h1>
           <div className="invitation-url">
             <p className="invitation-message">{invitationMessage}</p>
-            <Button onClick={handleCopy}>{copied ? 'コピーしました' : 'コピー'}</Button>
+            <div className="invitation-actions">
+              <LineShareButton message={invitationMessage} />
+              <Button variant="outline" onClick={handleCopy}>
+                {copied ? 'コピーしました' : 'コピー'}
+              </Button>
+            </div>
             {copyFailed && (
               <p className="form-hint">
                 コピーできませんでした。上のメッセージを選択してコピーしてください。
