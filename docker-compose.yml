@@ -33,6 +33,19 @@ services:
     depends_on:
       db:
         condition: service_healthy
+  # LINEのWebhookをローカルで受けるための公開トンネル。
+  # 起動中はローカルの開発サーバが誰でもアクセスできる状態になるため、
+  # profiles で明示的に指定したときだけ起動する:
+  #   docker compose --profile tunnel up -d tunnel
+  #   docker compose logs tunnel   # 払い出されたURLを確認する
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: ["tunnel", "--no-autoupdate", "--url", "http://backend:3000"]
+    profiles:
+      - tunnel
+    depends_on:
+      - backend
+
   frontend:
     build:
       context: ./frontend
