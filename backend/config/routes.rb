@@ -15,6 +15,7 @@ Rails.application.routes.draw do
     get "me", to: "me#show"
     patch "me", to: "me#update"
     post "vent_chats", to: "vent_chats#create"
+    post "line/webhook", to: "line_webhooks#create"
     resources :rooms, only: [ :index, :show, :create, :destroy ] do
       resources :invitations, only: [ :create ]
       resources :themes, only: [ :index, :create ]
