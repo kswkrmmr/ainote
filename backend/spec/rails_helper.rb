@@ -13,6 +13,11 @@ require 'webmock/rspec'
 
 WebMock.disable_net_connect!(allow_localhost: true)
 
+# docker compose のコンテナは backend/.env を読むため、テストにも本物のLINEの認証情報が入ってくる。
+# 実際のAPIを呼ぶ事故を防ぎ、WebMockのエラー表示にトークンが出ないよう、テストでは消しておく。
+# 必要なspecは around で値を設定する。
+%w[LINE_CHANNEL_ACCESS_TOKEN LINE_CHANNEL_SECRET].each { |name| ENV.delete(name) }
+
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
 # run as spec files by default. This means that files in spec/support that end

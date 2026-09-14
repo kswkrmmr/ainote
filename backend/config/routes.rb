@@ -16,6 +16,8 @@ Rails.application.routes.draw do
     patch "me", to: "me#update"
     post "vent_chats", to: "vent_chats#create"
     post "line/webhook", to: "line_webhooks#create"
+    post "line/account_link", to: "line_account_links#create"
+    delete "line/account_link", to: "line_account_links#destroy"
     resources :rooms, only: [ :index, :show, :create, :destroy ] do
       resources :invitations, only: [ :create ]
       resources :themes, only: [ :index, :create ]

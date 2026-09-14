@@ -9,6 +9,7 @@ import InvitationPage from './pages/InvitationPage'
 import ThemePage from './pages/ThemePage'
 import ProfilePage from './pages/ProfilePage'
 import VentChatPage from './pages/VentChatPage'
+import LineLinkPage from './pages/LineLinkPage'
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
       <Route path="/themes/:id" element={<ThemePage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/vent" element={<VentChatPage />} />
+      <Route path="/line/link" element={<LineLinkPage />} />
     </Routes>
   )
 }

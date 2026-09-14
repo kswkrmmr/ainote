@@ -36,10 +36,26 @@ module Api
       parsed.is_a?(Hash) ? Array(parsed["events"]) : []
     end
 
-    # 現時点では受信できていることを確認できれば十分。
-    # 友だち追加(follow)からのアカウント紐づけは #121 で実装する。
     def handle_event(event)
       Rails.logger.info("[LINE] received event: #{event["type"]}")
+
+      line_user_id = event.dig("source", "userId")
+      return if line_user_id.blank?
+
+      case event["type"]
+      when "follow"
+        LineAccountLinker.send_link_url(line_user_id)
+      when "message"
+        LineAccountLinker.send_link_url(line_user_id) if event.dig("message", "text").to_s.strip == "連携"
+      when "unfollow"
+        LineAccountLinker.unlink(line_user_id)
+      when "accountLink"
+        LineAccountLinker.complete(line_user_id, event["link"])
+      end
+    rescue StandardError => e
+      # 1件の失敗で他のイベントまで500にすると、LINEの再送で同じ処理が繰り返されうる。
+      # ログに残して次のイベントへ進む
+      Rails.logger.error("[LINE] failed to handle #{event["type"]}: #{e.class}: #{e.message}")
     end
   end
 end
