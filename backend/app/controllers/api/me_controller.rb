@@ -38,7 +38,9 @@ module Api
         id: user.id,
         nickname: user.nickname,
         email: user.email,
-        avatar_url: user.avatar.attached? ? rails_blob_url(user.avatar, host: request.base_url) : nil
+        avatar_url: user.avatar.attached? ? rails_blob_url(user.avatar, host: request.base_url) : nil,
+        # LINEユーザーID自体はフロントで使わないので返さない
+        line_linked: user.line_user_id.present?
       }
     end
 

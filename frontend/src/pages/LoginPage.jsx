@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { setToken } from '@/lib/auth'
 import { apiFetch } from '@/lib/api'
+import { safeRedirect } from '@/lib/redirect'
 
 function LoginPage() {
   const navigate = useNavigate()
@@ -32,7 +33,7 @@ function LoginPage() {
 
       if (response.ok) {
         setToken(data.token)
-        navigate(redirect?.startsWith('/invitations/') ? redirect : '/rooms')
+        navigate(safeRedirect(redirect))
       } else {
         setErrors(data.errors || ['ログインに失敗しました'])
       }

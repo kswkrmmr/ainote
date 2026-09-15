@@ -10,7 +10,7 @@ RSpec.describe "Api::Me", type: :request do
 
       expect(response).to have_http_status(:ok)
         expect(JSON.parse(response.body)).to eq(
-          { "id" => user.id, "nickname" => user.nickname, "email" => user.email, "avatar_url" => nil }
+          { "id" => user.id, "nickname" => user.nickname, "email" => user.email, "avatar_url" => nil, "line_linked" => false }
         )
       end
 
@@ -24,6 +24,17 @@ RSpec.describe "Api::Me", type: :request do
       get "/api/me", headers: { "Authorization" => "Bearer invalid-token" }
 
       expect(response).to have_http_status(:unauthorized)
+    end
+
+    it "reports whether the user has linked a LINE account without exposing the LINE user id" do
+      user = create(:user, line_user_id: "U1111")
+      token = JsonWebToken.encode(user_id: user.id)
+
+      get "/api/me", headers: { "Authorization" => "Bearer #{token}" }
+
+      body = JSON.parse(response.body)
+      expect(body["line_linked"]).to be(true)
+      expect(body.values).not_to include("U1111")
     end
 
     it "includes avatar_url when an avatar is attached" do

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { getToken } from '@/lib/auth'
 import { useApi, readJson } from '@/lib/api'
+import { lineButtonClass, lineFriendUrl } from '@/lib/line'
 import { cn } from '@/lib/utils'
 
 function ProfilePage() {
@@ -25,6 +26,9 @@ function ProfilePage() {
   const [errors, setErrors] = useState([])
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [lineLinked, setLineLinked] = useState(null)
+  const [unlinkingLine, setUnlinkingLine] = useState(false)
+  const [lineErrors, setLineErrors] = useState([])
 
   useEffect(() => {
     const token = getToken()
@@ -41,6 +45,7 @@ function ProfilePage() {
           setAvatarUrl(data.avatar_url)
           setEmail(data.email)
           setInitialEmail(data.email)
+          setLineLinked(data.line_linked)
         }
       })
   }, [api, navigate])
@@ -50,6 +55,32 @@ function ProfilePage() {
     setAvatarFile(file)
     setAvatarPreviewUrl(file ? URL.createObjectURL(file) : null)
     setRemoveAvatar(false)
+  }
+
+  async function handleUnlinkLine() {
+    if (!window.confirm('LINEとの連携を解除しますか?')) {
+      return
+    }
+
+    setUnlinkingLine(true)
+    setLineErrors([])
+
+    try {
+      const response = await api('/api/line/account_link', { method: 'DELETE' })
+      if (!response) return
+
+      if (!response.ok) {
+        const data = await readJson(response)
+        setLineErrors(data?.errors || [`解除に失敗しました（エラー ${response.status}）`])
+        return
+      }
+
+      setLineLinked(false)
+    } catch {
+      setLineErrors(['通信エラーが発生しました'])
+    } finally {
+      setUnlinkingLine(false)
+    }
   }
 
   function handleRemoveAvatar() {
@@ -215,6 +246,43 @@ function ProfilePage() {
             {saving ? '保存中...' : '保存する'}
           </Button>
         </form>
+
+        {lineLinked !== null && (
+          <section className="line-link-section">
+            <h2>LINE連携</h2>
+            {lineLinked ? (
+              <>
+                <p>LINEと連携しています。</p>
+                <Button variant="outline" onClick={handleUnlinkLine} disabled={unlinkingLine}>
+                  {unlinkingLine ? '解除中...' : 'LINE連携を解除する'}
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="form-hint">
+                  公式アカウントを友だち追加すると、LINEに連携用のメッセージが届きます。
+                </p>
+                {lineFriendUrl && (
+                  <a
+                    href={lineFriendUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={lineButtonClass}
+                  >
+                    LINEで友だち追加
+                  </a>
+                )}
+              </>
+            )}
+            {lineErrors.length > 0 && (
+              <ul className="form-errors">
+                {lineErrors.map((error) => (
+                  <li key={error}>{error}</li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
       </main>
     </>
   )

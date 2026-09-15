@@ -5,6 +5,7 @@ class User < ApplicationRecord
   has_many :room_members, dependent: :destroy
   has_many :themes, dependent: :destroy
   has_many :messages, dependent: :destroy
+  has_many :line_account_links, dependent: :delete_all
   has_one_attached :avatar
 
   AVATAR_CONTENT_TYPES = [ "image/png", "image/jpeg", "image/webp" ].freeze
@@ -17,6 +18,7 @@ class User < ApplicationRecord
   format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :password, length: { minimum: 8 }, allow_nil: true
   validates :password, confirmation: true
+  validates :line_user_id, uniqueness: true, allow_nil: true
   validate :avatar_format, :avatar_size
 
   private
