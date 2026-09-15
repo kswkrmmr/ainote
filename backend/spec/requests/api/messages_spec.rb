@@ -189,6 +189,30 @@ RSpec.describe "Api::Messages", type: :request do
   describe "POST /api/themes/:theme_id/messages" do
     before { room_member }
 
+    it "notifies the partner on LINE about the new message" do
+      allow(LineMessageNotifier).to receive(:notify)
+
+      post "/api/themes/#{theme.id}/messages",
+        params: { message: { original_body: "原文", translated_body: "変換後" } },
+        headers: headers
+
+      expect(LineMessageNotifier).to have_received(:notify).with(Message.last)
+    end
+
+    it "still creates the message when the LINE notification fails" do
+      partner = create(:user, line_user_id: "U_PARTNER")
+      create(:room_member, room: room, user: partner, partner_display_name: "夫")
+      allow(LineClient).to receive(:push_text).and_raise(LineClient::Error, "boom")
+
+      expect {
+        post "/api/themes/#{theme.id}/messages",
+          params: { message: { original_body: "原文", translated_body: "変換後" } },
+          headers: headers
+      }.to change(Message, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+    end
+
     it "creates a message with the given original and translated text" do
       expect {
         post "/api/themes/#{theme.id}/messages",

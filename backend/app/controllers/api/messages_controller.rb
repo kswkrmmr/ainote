@@ -42,6 +42,7 @@ module Api
 
       if message.save
         MessagesChannel.broadcast_to(@theme, message_json(message))
+        LineMessageNotifier.notify(message)
         render json: message_json(message), status: :created
       else
         render json: { errors: message.errors.full_messages }, status: :unprocessable_entity
