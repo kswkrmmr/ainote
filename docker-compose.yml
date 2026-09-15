@@ -59,7 +59,7 @@ services:
     environment:
       VITE_API_BASE_URL: http://localhost:3000
       # 開発用のLINE公式アカウントの友だち追加URL。本番用はRenderで別の値を設定する
-      VITE_LINE_FRIEND_URL: https://lin.ee/9uSymgW
+      VITE_LINE_FRIEND_URL: https://lin.ee/UNE4oLO
     depends_on:
       - backend
 
