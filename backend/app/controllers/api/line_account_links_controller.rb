@@ -15,8 +15,15 @@ module Api
       render json: { redirect_url: LineAccountLinker.start(current_user, link_token) }, status: :created
     end
 
-    # LINEの規約上、連携したユーザーがいつでも解除できるようにする必要がある
+    # LINEの規約上、連携したユーザーがいつでも解除できるようにする必要がある。
+    # ただしLINEログインで作られたアカウントだけは、解除するとログインできなくなるため断る
     def destroy
+      if current_user.line_only?
+        render json: { errors: [ "LINEでログインしているため、連携を解除できません。解除するとログインできなくなります。" ] },
+               status: :unprocessable_entity
+        return
+      end
+
       line_user_id = current_user.line_user_id
       current_user.update!(line_user_id: nil)
 

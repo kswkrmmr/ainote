@@ -259,9 +259,16 @@ function ProfilePage() {
             {lineLinked ? (
               <>
                 <p>LINEと連携しています。</p>
-                <Button variant="outline" onClick={handleUnlinkLine} disabled={unlinkingLine}>
-                  {unlinkingLine ? '解除中...' : 'LINE連携を解除する'}
-                </Button>
+                {lineOnly ? (
+                  // LINEログインで作ったアカウントは、解除するとログインする手段が無くなる
+                  <p className="form-hint">
+                    このアカウントはLINEでログインしているため、連携の解除はできません。
+                  </p>
+                ) : (
+                  <Button variant="outline" onClick={handleUnlinkLine} disabled={unlinkingLine}>
+                    {unlinkingLine ? '解除中...' : 'LINE連携を解除する'}
+                  </Button>
+                )}
               </>
             ) : (
               <>

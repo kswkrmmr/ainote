@@ -127,6 +127,16 @@ RSpec.describe LineAccountLinker do
       expect(user.reload.line_user_id).to be_nil
     end
 
+    it "keeps the link for an account created by LINE login, which would otherwise lose its only way in" do
+      user = create(:user, :line_only)
+
+      described_class.unlink(user.line_user_id)
+
+      expect(user.reload.line_user_id).to be_present
+      expect(user.email).to be_nil
+      expect(user.password_digest).to be_nil
+    end
+
     it "does not message a user who blocked the account" do
       create(:user, line_user_id: "U1111")
 
