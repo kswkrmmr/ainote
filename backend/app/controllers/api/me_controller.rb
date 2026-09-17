@@ -40,7 +40,9 @@ module Api
         email: user.email,
         avatar_url: user.avatar.attached? ? rails_blob_url(user.avatar, host: request.base_url) : nil,
         # LINEユーザーID自体はフロントで使わないので返さない
-        line_linked: user.line_user_id.present?
+        line_linked: user.line_user_id.present?,
+        # LINE専用アカウントにはメールアドレスとパスワードの欄を出さない
+        line_only: user.line_only?
       }
     end
 

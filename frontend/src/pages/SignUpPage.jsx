@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Header from '@/components/Header'
+import LineLoginButton from '@/components/LineLoginButton'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -102,6 +103,11 @@ function SignUpPage() {
             {submitting ? '登録中...' : '登録する'}
           </Button>
         </form>
+
+        <div className="line-login">
+          <p className="form-hint">または</p>
+          <LineLoginButton label="LINEではじめる" redirect={redirect} onError={setErrors} />
+        </div>
       </main>
     </>
   )

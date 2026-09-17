@@ -10,6 +10,7 @@ import ThemePage from './pages/ThemePage'
 import ProfilePage from './pages/ProfilePage'
 import VentChatPage from './pages/VentChatPage'
 import LineLinkPage from './pages/LineLinkPage'
+import LineCallbackPage from './pages/LineCallbackPage'
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/vent" element={<VentChatPage />} />
       <Route path="/line/link" element={<LineLinkPage />} />
+      <Route path="/line/callback" element={<LineCallbackPage />} />
     </Routes>
   )
 }

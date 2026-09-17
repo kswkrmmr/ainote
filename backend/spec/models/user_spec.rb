@@ -13,6 +13,16 @@ RSpec.describe User, type: :model do
       expect(user.errors[:nickname]).to include("を入力してください")
     end
 
+    it "is valid without an email or password when the account was created by LINE login" do
+      expect(build(:user, :line_only)).to be_valid
+    end
+
+    it "never authenticates a LINE-only account, which has no password" do
+      user = create(:user, :line_only)
+
+      expect(user.authenticate("password123")).to be(false)
+    end
+
     it "is invalid without an email" do
       user = build(:user, email: nil)
       expect(user).not_to be_valid

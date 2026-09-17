@@ -27,6 +27,7 @@ function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [lineLinked, setLineLinked] = useState(null)
+  const [lineOnly, setLineOnly] = useState(false)
   const [unlinkingLine, setUnlinkingLine] = useState(false)
   const [lineErrors, setLineErrors] = useState([])
 
@@ -46,6 +47,7 @@ function ProfilePage() {
           setEmail(data.email)
           setInitialEmail(data.email)
           setLineLinked(data.line_linked)
+          setLineOnly(data.line_only)
         }
       })
   }, [api, navigate])
@@ -190,50 +192,54 @@ function ProfilePage() {
               required
             />
           </div>
-          <div className="form-field">
-            <Label htmlFor="email">メールアドレス</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              required
-            />
-          </div>
-          <div className="form-field">
-            <Label htmlFor="newPassword">新しいパスワード</Label>
-            <Input
-              id="newPassword"
-              type="password"
-              value={newPassword}
-              onChange={(event) => setNewPassword(event.target.value)}
-              autoComplete="new-password"
-            />
-            <p className="form-hint">変更しない場合は空欄のままにしてください</p>
-          </div>
-          {newPassword && (
-            <div className="form-field">
-              <Label htmlFor="newPasswordConfirmation">新しいパスワード(確認)</Label>
-              <Input
-                id="newPasswordConfirmation"
-                type="password"
-                value={newPasswordConfirmation}
-                onChange={(event) => setNewPasswordConfirmation(event.target.value)}
-                autoComplete="new-password"
-              />
-            </div>
+          {!lineOnly && (
+            <>
+              <div className="form-field">
+                <Label htmlFor="email">メールアドレス</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-field">
+                <Label htmlFor="newPassword">新しいパスワード</Label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  value={newPassword}
+                  onChange={(event) => setNewPassword(event.target.value)}
+                  autoComplete="new-password"
+                />
+                <p className="form-hint">変更しない場合は空欄のままにしてください</p>
+              </div>
+              {newPassword && (
+                <div className="form-field">
+                  <Label htmlFor="newPasswordConfirmation">新しいパスワード(確認)</Label>
+                  <Input
+                    id="newPasswordConfirmation"
+                    type="password"
+                    value={newPasswordConfirmation}
+                    onChange={(event) => setNewPasswordConfirmation(event.target.value)}
+                    autoComplete="new-password"
+                  />
+                </div>
+              )}
+              <div className="form-field">
+                <Label htmlFor="currentPassword">現在のパスワード</Label>
+                <Input
+                  id="currentPassword"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(event) => setCurrentPassword(event.target.value)}
+                  autoComplete="current-password"
+                />
+                <p className="form-hint">メールアドレス・パスワードを変更する場合のみ必要です</p>
+              </div>
+            </>
           )}
-          <div className="form-field">
-            <Label htmlFor="currentPassword">現在のパスワード</Label>
-            <Input
-              id="currentPassword"
-              type="password"
-              value={currentPassword}
-              onChange={(event) => setCurrentPassword(event.target.value)}
-              autoComplete="current-password"
-            />
-            <p className="form-hint">メールアドレス・パスワードを変更する場合のみ必要です</p>
-          </div>
           {errors.length > 0 && (
             <ul className="form-errors">
               {errors.map((error) => (

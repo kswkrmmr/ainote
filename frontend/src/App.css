@@ -164,6 +164,16 @@
   font-size: 18px;
 }
 
+/* ログイン・新規登録画面のLINEログイン */
+.line-login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+}
+
 /* プロフィール画面のLINE連携。保存フォームとは独立して操作するため別のまとまりにする */
 .line-link-section {
   display: flex;
