@@ -60,6 +60,17 @@ RSpec.describe "Api::LineAccountLinks", type: :request do
       expect(user.reload.line_user_id).to be_nil
     end
 
+    it "refuses to unlink an account created by LINE login" do
+      line_user = create(:user, :line_only)
+      headers = { "Authorization" => "Bearer #{JsonWebToken.encode(user_id: line_user.id)}" }
+
+      delete "/api/line/account_link", headers: headers
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(JSON.parse(response.body)["errors"].first).to include("ログインできなくなります")
+      expect(line_user.reload.line_user_id).to be_present
+    end
+
     it "returns unauthorized without a token" do
       delete "/api/line/account_link"
 

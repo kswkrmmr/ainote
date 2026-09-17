@@ -61,9 +61,17 @@ class LineAccountLinker
     end
 
     # ブロック(unfollow)されたときは連携も解除する。
-    # ブロックしたユーザーにはメッセージを送れないので、解除の通知はしない
+    # ブロックしたユーザーにはメッセージを送れないので、解除の通知はしない。
+    #
+    # ただしLINEログインで作られたアカウントは、連携を外すとログインする手段が
+    # 無くなってしまう（メールアドレスもパスワードも持たない）ため対象外にする。
+    # 通知は届かなくなるが、アカウントは使い続けられる。
     def unlink(line_user_id)
-      User.where(line_user_id: line_user_id).update_all(line_user_id: nil, updated_at: Time.current)
+      User.where(line_user_id: line_user_id).find_each do |user|
+        next if user.line_only?
+
+        user.update!(line_user_id: nil)
+      end
     end
 
     private
