@@ -10,7 +10,8 @@ RSpec.describe "Api::Me", type: :request do
 
       expect(response).to have_http_status(:ok)
         expect(JSON.parse(response.body)).to eq(
-          { "id" => user.id, "nickname" => user.nickname, "email" => user.email, "avatar_url" => nil, "line_linked" => false }
+          { "id" => user.id, "nickname" => user.nickname, "email" => user.email, "avatar_url" => nil,
+            "line_linked" => false, "line_only" => false }
         )
       end
 

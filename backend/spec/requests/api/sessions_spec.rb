@@ -19,6 +19,14 @@ RSpec.describe "Api::Sessions", type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
+    it "returns unauthorized for a LINE-only account, which has no password" do
+      create(:user, :line_only, nickname: "LINEの人")
+
+      post "/api/login", params: { email: "", password: "" }
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
     it "returns unauthorized with a non-existent email" do
       post "/api/login", params: { email: "nobody@example.com", password: "password123" }
 
