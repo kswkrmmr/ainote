@@ -6,6 +6,20 @@ import { setToken } from '@/lib/auth'
 import { apiFetch, readJson } from '@/lib/api'
 import { safeRedirect } from '@/lib/redirect'
 
+// LINEから戻ってきた時点で分かる失敗。ログインを試すまでもないもの
+function failureMessages({ loginError, code, state }) {
+  if (loginError === 'access_denied') {
+    return ['LINEでのログインをキャンセルしました。']
+  }
+  if (loginError) {
+    return ['LINEでのログインに失敗しました。もう一度お試しください。']
+  }
+  if (!code || !state) {
+    return ['ログインの情報が不足しています。もう一度お試しください。']
+  }
+  return null
+}
+
 // LINEログインのコールバック。認可コードを受け取り、バックエンドでログインを済ませる
 function LineCallbackPage() {
   const navigate = useNavigate()
@@ -14,10 +28,11 @@ function LineCallbackPage() {
   const startedRef = useRef(false)
   const code = searchParams.get('code')
   const state = searchParams.get('state')
+  // ユーザーがLINEの画面でキャンセルすると、codeの代わりにerrorが付いて戻ってくる
+  const loginError = searchParams.get('error')
 
-  // パラメータ不足は描画時に判断する（エフェクトの中で状態を更新しないため）
-  const messages =
-    !code || !state ? ['ログインの情報が不足しています。もう一度お試しください。'] : errors
+  // パラメータ不足やキャンセルは描画時に判断する（エフェクトの中で状態を更新しないため）
+  const messages = failureMessages({ loginError, code, state }) || errors
 
   useEffect(() => {
     // Strictモードで2回実行されると認可コードを二重に使ってしまうため、1回だけ走らせる
@@ -26,7 +41,7 @@ function LineCallbackPage() {
     }
     startedRef.current = true
 
-    if (!code || !state) {
+    if (loginError || !code || !state) {
       return
     }
 
@@ -43,7 +58,7 @@ function LineCallbackPage() {
         navigate(safeRedirect(data.redirect), { replace: true })
       })
       .catch(() => setErrors(['通信エラーが発生しました']))
-  }, [code, state, navigate])
+  }, [loginError, code, state, navigate])
 
   return (
     <>
@@ -51,7 +66,11 @@ function LineCallbackPage() {
       <main className="signup-page">
         {messages.length > 0 ? (
           <>
-            <h1>LINEでログインできませんでした</h1>
+            <h1>
+              {loginError === 'access_denied'
+                ? 'ログインを中止しました'
+                : 'LINEでログインできませんでした'}
+            </h1>
             <ul className="form-errors">
               {messages.map((error) => (
                 <li key={error}>{error}</li>

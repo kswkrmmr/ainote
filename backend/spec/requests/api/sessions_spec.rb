@@ -13,6 +13,12 @@ RSpec.describe "Api::Sessions", type: :request do
             expect(body["user"]).to eq({ "id" => user.id, "nickname" => user.nickname, "email" => user.email })
     end
 
+    it "finds the account even when the email has different case and spaces" do
+      post "/api/login", params: { email: "  USER@Example.com ", password: "password123" }
+
+      expect(response).to have_http_status(:ok)
+    end
+
     it "returns unauthorized with an incorrect password" do
       post "/api/login", params: { email: "user@example.com", password: "wrongpassword" }
 

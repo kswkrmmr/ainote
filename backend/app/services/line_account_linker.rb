@@ -21,7 +21,7 @@ class LineAccountLinker
 
     # ログイン済みのユーザーについてnonceを発行し、LINEの連携エンドポイントのURLを返す
     def start(user, link_token)
-      user.line_account_links.where(expires_at: ..Time.current).delete_all
+      LineAccountLink.where(expires_at: ..Time.current).delete_all
 
       # LINEの要件: 推測できない値・10〜255文字・128bit以上の安全な乱数
       link = user.line_account_links.create!(
@@ -77,7 +77,7 @@ class LineAccountLinker
     private
 
     def frontend_origin
-      ENV.fetch("FRONTEND_ORIGIN", "http://localhost:5173")
+      Rails.configuration.x.frontend_origin
     end
 
     def link_message(link_token)

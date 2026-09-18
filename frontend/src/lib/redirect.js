@@ -1,4 +1,6 @@
 // ログイン・新規登録のあとに戻す先として許可するパス。
+// バックエンドにも同じ一覧があるので、増やすときは
+// backend/app/services/line_login.rb の ALLOWED_REDIRECT_PREFIXES も直すこと。
 // redirect パラメータに任意の値を入れて外部サイトへ飛ばされないよう、前方一致で限定する
 const ALLOWED_REDIRECT_PREFIXES = ['/invitations/', '/line/link']
 

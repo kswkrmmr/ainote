@@ -52,6 +52,14 @@ RSpec.describe LineAccountLinker do
       expect(user.line_account_links.pluck(:nonce).uniq.size).to eq(2)
     end
 
+    it "also clears expired links left behind by other users" do
+      stale = create(:line_account_link, user: create(:user), expires_at: 1.minute.ago)
+
+      described_class.start(user, "LINKTOKEN")
+
+      expect(LineAccountLink.exists?(stale.id)).to be(false)
+    end
+
     it "removes the user's expired links but keeps ones still in progress" do
       expired = create(:line_account_link, user: user, expires_at: 1.minute.ago)
       active = create(:line_account_link, user: user)

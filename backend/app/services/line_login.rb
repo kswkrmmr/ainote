@@ -9,7 +9,8 @@ class LineLogin
   VERIFY_ENDPOINT = "https://api.line.me/oauth2/v2.1/verify".freeze
 
   STATE_TTL = 10.minutes
-  # ログイン後に戻す先。任意のURLを渡されて外部に飛ばされないよう前方一致で限定する
+  # ログイン後に戻す先。任意のURLを渡されて外部に飛ばされないよう前方一致で限定する。
+  # フロント側にも同じ一覧があるので、増やすときは frontend/src/lib/redirect.js も直すこと
   ALLOWED_REDIRECT_PREFIXES = [ "/invitations/", "/line/link" ].freeze
   DEFAULT_NICKNAME = "LINEユーザー".freeze
 
@@ -55,7 +56,7 @@ class LineLogin
     end
 
     def callback_url
-      "#{ENV.fetch("FRONTEND_ORIGIN", "http://localhost:5173")}/line/callback"
+      "#{Rails.configuration.x.frontend_origin}/line/callback"
     end
 
     def verifier
