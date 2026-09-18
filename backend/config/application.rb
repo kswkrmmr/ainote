@@ -43,6 +43,8 @@ module App
 
     config.i18n.default_locale = :ja
 
-    config.action_cable.allowed_request_origins = [ ENV.fetch("FRONTEND_ORIGIN", "http://localhost:5173") ]
+    # フロントエンドのURL。CORS・ActionCable・LINEに送るリンクの組み立てで使う
+    config.x.frontend_origin = ENV.fetch("FRONTEND_ORIGIN", "http://localhost:5173")
+    config.action_cable.allowed_request_origins = [ config.x.frontend_origin ]
   end
 end

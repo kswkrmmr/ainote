@@ -24,7 +24,7 @@ module Api
       }, status: :created
     rescue LineLogin::Error => e
       render json: { errors: [ e.message ] }, status: :unauthorized
-    rescue KeyError, StandardError => e
+    rescue StandardError => e
       log_and_render_error(e)
     end
 

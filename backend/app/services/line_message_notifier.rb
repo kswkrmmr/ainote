@@ -59,7 +59,7 @@ class LineMessageNotifier
   def notification_text(recipient_member)
     <<~TEXT.chomp
       #{recipient_member.partner_display_name}から、あいのてに新しいメッセージが届きました。
-      #{ENV.fetch("FRONTEND_ORIGIN", "http://localhost:5173")}/themes/#{@message.theme_id}
+      #{Rails.configuration.x.frontend_origin}/themes/#{@message.theme_id}
     TEXT
   end
 end
