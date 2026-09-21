@@ -4,7 +4,8 @@ class ApplicationController < ActionController::API
   def authenticate_user!
     token = request.headers["Authorization"]&.split(" ")&.last
     decoded = token && JsonWebToken.decode(token)
-    @current_user = decoded && User.find_by(id: decoded[:user_id])
+    # 退会済みのアカウントは、発行済みのトークンが残っていても使わせない
+    @current_user = decoded && User.active.find_by(id: decoded[:user_id])
 
     render json: { errors: [ "認証が必要です" ] }, status: :unauthorized unless @current_user
   end

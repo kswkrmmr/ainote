@@ -2,7 +2,7 @@ module Api
   class SessionsController < ApplicationController
     def create
       # Userのnormalizesが前後の空白と大文字小文字を揃えてくれる
-      user = User.find_by(email: params[:email].to_s)
+      user = User.active.find_by(email: params[:email].to_s)
 
       if user&.authenticate(params[:password])
         token = JsonWebToken.encode(user_id: user.id)

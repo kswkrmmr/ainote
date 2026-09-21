@@ -212,4 +212,35 @@ RSpec.describe "Api::Me", type: :request do
       expect(JSON.parse(response.body)["errors"]).to be_present
     end
   end
+
+  describe "DELETE /api/me" do
+    let(:user) { create(:user) }
+    let(:token) { JsonWebToken.encode(user_id: user.id) }
+    let(:headers) { { "Authorization" => "Bearer #{token}" } }
+
+    it "withdraws the account without deleting it" do
+      user # letは遅延生成なので、計測の前に作っておく
+
+      expect {
+        delete "/api/me", headers: headers
+      }.not_to change(User, :count)
+
+      expect(response).to have_http_status(:no_content)
+      expect(user.reload).to be_deleted
+    end
+
+    it "stops accepting the token that was issued before withdrawal" do
+      delete "/api/me", headers: headers
+
+      get "/api/me", headers: headers
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it "returns unauthorized without a token" do
+      delete "/api/me"
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
 end
