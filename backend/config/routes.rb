@@ -14,6 +14,7 @@ Rails.application.routes.draw do
     delete "logout", to: "sessions#destroy"
     get "me", to: "me#show"
     patch "me", to: "me#update"
+    delete "me", to: "me#destroy"
     post "vent_chats", to: "vent_chats#create"
     post "line/webhook", to: "line_webhooks#create"
     get "line/login_url", to: "line_logins#new"

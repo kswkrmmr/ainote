@@ -23,6 +23,12 @@ module Api
       end
     end
 
+    # 退会。メッセージは相手の記録でもあるため残し、本人の情報だけを消す
+    def destroy
+      current_user.withdraw!
+      head :no_content
+    end
+
     private
 
     def changing_sensitive_fields?

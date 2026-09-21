@@ -33,6 +33,14 @@ RSpec.describe "Api::Sessions", type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
+    it "returns unauthorized for a withdrawn account" do
+      user.withdraw!
+
+      post "/api/login", params: { email: "user@example.com", password: "password123" }
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
     it "returns unauthorized with a non-existent email" do
       post "/api/login", params: { email: "nobody@example.com", password: "password123" }
 

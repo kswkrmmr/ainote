@@ -10,15 +10,19 @@ class User < ApplicationRecord
   has_many :line_account_links, dependent: :delete_all
   has_one_attached :avatar
 
+  DELETED_NICKNAME = "退会したユーザー".freeze
+
   AVATAR_CONTENT_TYPES = [ "image/png", "image/jpeg", "image/webp" ].freeze
   AVATAR_MAX_SIZE = 5.megabytes
 
   normalizes :email, with: ->(email) { email.strip.downcase }
 
+  scope :active, -> { where(deleted_at: nil) }
+
   validates :nickname, presence: true
-  validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }, unless: :line_only?
+  validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }, unless: :credentials_optional?
   validates :email, uniqueness: true, allow_nil: true
-  validates :password_digest, presence: true, unless: :line_only?
+  validates :password_digest, presence: true, unless: :credentials_optional?
   validates :password, length: { minimum: 8 }, allow_nil: true
   validates :password, confirmation: true
   validates :line_user_id, uniqueness: true, allow_nil: true
@@ -29,6 +33,26 @@ class User < ApplicationRecord
     line_user_id.present? && email.blank?
   end
 
+  def deleted?
+    deleted_at.present?
+  end
+
+  # 退会。メッセージは相手の記録でもあるので消さず、本人の情報だけを消して印を付ける。
+  # メールアドレスを空けるのは、同じアドレスで登録し直せるようにするため。
+  def withdraw!
+    transaction do
+      avatar.purge if avatar.attached?
+
+      update!(
+        deleted_at: Time.current,
+        nickname: DELETED_NICKNAME,
+        email: nil,
+        password_digest: nil,
+        line_user_id: nil
+      )
+    end
+  end
+
   # パスワードを持たないアカウントは、パスワードでのログインを常に失敗させる
   def authenticate(password)
     return false if password_digest.blank?
@@ -37,6 +61,11 @@ class User < ApplicationRecord
   end
 
   private
+
+  # メールアドレスとパスワードを持たないのは、LINEログインのアカウントと退会済みのアカウント
+  def credentials_optional?
+    line_only? || deleted?
+  end
 
   def avatar_format
     return unless avatar.attached?

@@ -105,7 +105,7 @@ class LineLogin
       line_user_id = profile["sub"]
       raise Error, "LINEのユーザーIDを取得できませんでした" if line_user_id.blank?
 
-      User.find_by(line_user_id: line_user_id) ||
+      User.active.find_by(line_user_id: line_user_id) ||
         User.create!(line_user_id: line_user_id, nickname: profile["name"].presence || DEFAULT_NICKNAME)
     end
   end

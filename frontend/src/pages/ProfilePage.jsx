@@ -5,7 +5,7 @@ import Header from '@/components/Header'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { getToken } from '@/lib/auth'
+import { getToken, clearToken } from '@/lib/auth'
 import { useApi, readJson } from '@/lib/api'
 import { lineButtonClass, lineFriendUrl } from '@/lib/line'
 import { cn } from '@/lib/utils'
@@ -30,6 +30,8 @@ function ProfilePage() {
   const [lineOnly, setLineOnly] = useState(false)
   const [unlinkingLine, setUnlinkingLine] = useState(false)
   const [lineErrors, setLineErrors] = useState([])
+  const [withdrawing, setWithdrawing] = useState(false)
+  const [withdrawErrors, setWithdrawErrors] = useState([])
 
   useEffect(() => {
     const token = getToken()
@@ -57,6 +59,39 @@ function ProfilePage() {
     setAvatarFile(file)
     setAvatarPreviewUrl(file ? URL.createObjectURL(file) : null)
     setRemoveAvatar(false)
+  }
+
+  async function handleWithdraw() {
+    if (
+      !window.confirm(
+        '退会すると、このアカウントではログインできなくなります。\n' +
+          'あなたが書いたメッセージは、相手の画面には残ります。\n' +
+          '本当に退会しますか?',
+      )
+    ) {
+      return
+    }
+
+    setWithdrawing(true)
+    setWithdrawErrors([])
+
+    try {
+      const response = await api('/api/me', { method: 'DELETE' })
+      if (!response) return
+
+      if (!response.ok) {
+        const data = await readJson(response)
+        setWithdrawErrors(data?.errors || [`退会に失敗しました（エラー ${response.status}）`])
+        return
+      }
+
+      clearToken()
+      window.location.href = '/'
+    } catch {
+      setWithdrawErrors(['通信エラーが発生しました'])
+    } finally {
+      setWithdrawing(false)
+    }
   }
 
   async function handleUnlinkLine() {
@@ -296,6 +331,25 @@ function ProfilePage() {
             )}
           </section>
         )}
+
+        <section className="withdraw-section">
+          <h2>退会</h2>
+          <p className="form-hint">
+            退会すると、このアカウントではログインできなくなります。
+            <br />
+            あなたが書いたメッセージは、相手の画面には残ります。
+          </p>
+          {withdrawErrors.length > 0 && (
+            <ul className="form-errors">
+              {withdrawErrors.map((error) => (
+                <li key={error}>{error}</li>
+              ))}
+            </ul>
+          )}
+          <Button variant="outline" onClick={handleWithdraw} disabled={withdrawing}>
+            {withdrawing ? '退会処理中...' : '退会する'}
+          </Button>
+        </section>
       </main>
     </>
   )
