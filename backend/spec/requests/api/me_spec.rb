@@ -21,6 +21,15 @@ RSpec.describe "Api::Me", type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
+    it "returns unauthorized with an expired token" do
+      user = create(:user)
+      expired = JsonWebToken.encode({ user_id: user.id }, 1.second.ago)
+
+      get "/api/me", headers: { "Authorization" => "Bearer #{expired}" }
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
     it "returns unauthorized with an invalid token" do
       get "/api/me", headers: { "Authorization" => "Bearer invalid-token" }
 
