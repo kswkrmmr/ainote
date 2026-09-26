@@ -374,6 +374,11 @@ https://www.figma.com/design/QiU8uU5Jfsrj2PRjUIs0zk/%E7%94%BB%E9%9D%A2%E9%81%B7%
 ## 15. ER図
 https://dbdiagram.io/d/あいのて-6a4a59984ac62e474c312977
 
+### 図では表現できない仕様
+* **ルームは2人まで**：`room_members` はテーブル上は何件でも作成できるが、招待から参加する時点でアプリ側が定員を確認している
+* **退会は論理削除**：`users` の行は残り、`deleted_at` が入って `email` / `password_digest` / `line_user_id` が `null` になる。メッセージは相手にとっての記録でもあるため残す
+* **`active_storage_attachments` から `users` への線がない**：ポリモーフィック関連（`record_type` + `record_id`）のため外部キーを張れない。現在 `record_type` に入るのは `"User"` のみ（アバター画像）
+
 ---
 
 ## 16. ローカルでの動かし方
