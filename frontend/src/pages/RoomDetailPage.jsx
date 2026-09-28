@@ -8,7 +8,7 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { getToken } from '@/lib/auth'
-import { useApi } from '@/lib/api'
+import { useApi, readJson } from '@/lib/api'
 import { buildInvitationMessage } from '@/lib/invitation'
 import { copyText } from '@/lib/clipboard'
 
@@ -28,6 +28,10 @@ function RoomDetailPage() {
   const [themeErrors, setThemeErrors] = useState([])
   const [creatingTheme, setCreatingTheme] = useState(false)
   const [deletingThemeId, setDeletingThemeId] = useState(null)
+  const [editingName, setEditingName] = useState(false)
+  const [displayName, setDisplayName] = useState('')
+  const [savingName, setSavingName] = useState(false)
+  const [nameErrors, setNameErrors] = useState([])
 
   useEffect(() => {
     const token = getToken()
@@ -56,6 +60,40 @@ function RoomDetailPage() {
       .then((response) => (response?.ok ? response.json() : []))
       .then((data) => setThemes(data))
   }, [api, id, navigate])
+
+  function startEditingName() {
+    setDisplayName(room.partner_display_name)
+    setNameErrors([])
+    setEditingName(true)
+  }
+
+  async function handleSaveName(event) {
+    event.preventDefault()
+    setSavingName(true)
+    setNameErrors([])
+
+    try {
+      const response = await api(`/api/rooms/${id}`, {
+        method: 'PATCH',
+        body: { room: { partner_display_name: displayName } },
+      })
+      if (!response) return
+
+      const data = await readJson(response)
+
+      if (!response.ok) {
+        setNameErrors(data?.errors || [`変更に失敗しました（エラー ${response.status}）`])
+        return
+      }
+
+      setRoom(data)
+      setEditingName(false)
+    } catch {
+      setNameErrors(['通信エラーが発生しました'])
+    } finally {
+      setSavingName(false)
+    }
+  }
 
   async function handleIssueInvitation() {
     setIssuing(true)
@@ -162,6 +200,43 @@ function RoomDetailPage() {
             />
             <h1>{room.partner_display_name}とのルーム</h1>
           </div>
+        )}
+
+        {room && !editingName && (
+          <Button variant="outline" onClick={startEditingName}>
+            呼び名を変更する
+          </Button>
+        )}
+
+        {room && editingName && (
+          <form onSubmit={handleSaveName} className="signup-form">
+            <div className="form-field">
+              <Label htmlFor="partnerDisplayName">相手の呼び方</Label>
+              <Input
+                id="partnerDisplayName"
+                type="text"
+                value={displayName}
+                onChange={(event) => setDisplayName(event.target.value)}
+                required
+              />
+              <p className="form-hint">相手には表示されません</p>
+            </div>
+            {nameErrors.length > 0 && (
+              <ul className="form-errors">
+                {nameErrors.map((error) => (
+                  <li key={error}>{error}</li>
+                ))}
+              </ul>
+            )}
+            <div className="message-review-actions">
+              <Button type="submit" disabled={savingName}>
+                {savingName ? '保存中...' : '保存する'}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => setEditingName(false)}>
+                キャンセル
+              </Button>
+            </div>
+          </form>
         )}
 
         {themes && themes.length === 0 && (
