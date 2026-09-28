@@ -32,6 +32,10 @@ function RoomDetailPage() {
   const [displayName, setDisplayName] = useState('')
   const [savingName, setSavingName] = useState(false)
   const [nameErrors, setNameErrors] = useState([])
+  const [editingThemeId, setEditingThemeId] = useState(null)
+  const [editingThemeTitle, setEditingThemeTitle] = useState('')
+  const [savingTheme, setSavingTheme] = useState(false)
+  const [themeUpdateErrors, setThemeUpdateErrors] = useState([])
 
   useEffect(() => {
     const token = getToken()
@@ -151,6 +155,42 @@ function RoomDetailPage() {
       setThemeErrors(['通信エラーが発生しました'])
     } finally {
       setCreatingTheme(false)
+    }
+  }
+
+  function startEditingTheme(theme) {
+    setEditingThemeId(theme.id)
+    setEditingThemeTitle(theme.title)
+    setThemeUpdateErrors([])
+  }
+
+  async function handleRenameTheme(event, themeId) {
+    event.preventDefault()
+    setSavingTheme(true)
+    setThemeUpdateErrors([])
+
+    try {
+      const response = await api(`/api/themes/${themeId}`, {
+        method: 'PATCH',
+        body: { theme: { title: editingThemeTitle } },
+      })
+      if (!response) return
+
+      const data = await readJson(response)
+
+      if (!response.ok) {
+        setThemeUpdateErrors(data?.errors || [`変更に失敗しました（エラー ${response.status}）`])
+        return
+      }
+
+      setThemes((prevThemes) =>
+        (prevThemes || []).map((theme) => (theme.id === themeId ? data : theme)),
+      )
+      setEditingThemeId(null)
+    } catch {
+      setThemeUpdateErrors(['通信エラーが発生しました'])
+    } finally {
+      setSavingTheme(false)
     }
   }
 
@@ -276,23 +316,75 @@ function RoomDetailPage() {
               <li
                 key={theme.id}
                 className="theme-list-item"
-                onClick={() => navigate(`/themes/${theme.id}`)}
+                onClick={() => {
+                  if (editingThemeId !== theme.id) {
+                    navigate(`/themes/${theme.id}`)
+                  }
+                }}
               >
-                <Link to={`/themes/${theme.id}`} className="theme-list-item-link">
-                  {theme.title}
-                </Link>
-                <button
-                  type="button"
-                  className="list-item-delete"
-                  aria-label="テーマを削除"
-                  onClick={(event) => {
-                    event.stopPropagation()
-                    handleDeleteTheme(theme.id)
-                  }}
-                  disabled={deletingThemeId === theme.id}
-                >
-                  ×
-                </button>
+                {editingThemeId === theme.id ? (
+                  <form
+                    onSubmit={(event) => handleRenameTheme(event, theme.id)}
+                    onClick={(event) => event.stopPropagation()}
+                    className="theme-rename-form"
+                  >
+                    <Input
+                      value={editingThemeTitle}
+                      onChange={(event) => setEditingThemeTitle(event.target.value)}
+                      aria-label="テーマ名"
+                      required
+                    />
+                    {themeUpdateErrors.length > 0 && (
+                      <ul className="form-errors">
+                        {themeUpdateErrors.map((error) => (
+                          <li key={error}>{error}</li>
+                        ))}
+                      </ul>
+                    )}
+                    <div className="message-review-actions">
+                      <Button type="submit" disabled={savingTheme}>
+                        {savingTheme ? '保存中...' : '保存する'}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setEditingThemeId(null)}
+                      >
+                        キャンセル
+                      </Button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <Link to={`/themes/${theme.id}`} className="theme-list-item-link">
+                      {theme.title}
+                    </Link>
+                    <div className="theme-list-item-actions">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          startEditingTheme(theme)
+                        }}
+                      >
+                        名前を変更
+                      </Button>
+                      <button
+                        type="button"
+                        className="list-item-delete"
+                        aria-label="テーマを削除"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          handleDeleteTheme(theme.id)
+                        }}
+                        disabled={deletingThemeId === theme.id}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </>
+                )}
               </li>
             ))}
           </ul>

@@ -226,4 +226,62 @@ RSpec.describe "Api::Themes", type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
   end
+
+  describe "PATCH /api/themes/:id" do
+    let(:creator) { create(:user) }
+    let(:joiner) { create(:user) }
+    let(:room) { create(:room, owner: creator) }
+    let!(:creator_member) { create(:room_member, room: room, user: creator, partner_display_name: "つま") }
+    let!(:joiner_member) { create(:room_member, room: room, user: joiner, partner_display_name: "おっと") }
+    let(:theme) { create(:theme, room: room, user: creator, title: "家事について") }
+
+    def headers_for(user)
+      { "Authorization" => "Bearer #{JsonWebToken.encode(user_id: user.id)}" }
+    end
+
+    it "renames the theme for the member who created it" do
+      patch "/api/themes/#{theme.id}", params: { theme: { title: "平日の家事分担" } }, headers: headers_for(creator)
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)).to eq({ "id" => theme.id, "title" => "平日の家事分担" })
+      expect(theme.reload.title).to eq("平日の家事分担")
+    end
+
+    it "lets any member of the room rename it, not just the creator" do
+      patch "/api/themes/#{theme.id}", params: { theme: { title: "週末の予定" } }, headers: headers_for(joiner)
+
+      expect(response).to have_http_status(:ok)
+      expect(theme.reload.title).to eq("週末の予定")
+    end
+
+    it "keeps the messages when the title changes" do
+      message = create(:message, theme: theme, user: creator, translated_body: "残るはず")
+
+      patch "/api/themes/#{theme.id}", params: { theme: { title: "新しい名前" } }, headers: headers_for(creator)
+
+      expect(Message.find(message.id).translated_body).to eq("残るはず")
+    end
+
+    it "returns unprocessable_entity with a blank title" do
+      patch "/api/themes/#{theme.id}", params: { theme: { title: "" } }, headers: headers_for(creator)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(theme.reload.title).to eq("家事について")
+    end
+
+    it "returns not_found for a theme in a room the current user is not a member of, leaving it untouched" do
+      outsider = create(:user)
+
+      patch "/api/themes/#{theme.id}", params: { theme: { title: "のっとる" } }, headers: headers_for(outsider)
+
+      expect(response).to have_http_status(:not_found)
+      expect(theme.reload.title).to eq("家事について")
+    end
+
+    it "returns unauthorized without a token" do
+      patch "/api/themes/#{theme.id}", params: { theme: { title: "新しい名前" } }
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
 end

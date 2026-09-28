@@ -4,7 +4,7 @@ module Api
 
     before_action :authenticate_user!
     before_action :set_room, only: [ :index, :create ]
-    before_action :set_theme, only: [ :show, :destroy, :summary ]
+    before_action :set_theme, only: [ :show, :update, :destroy, :summary ]
 
     def index
       render json: @room.themes.order(:created_at).map { |theme| theme_json(theme) }
@@ -12,6 +12,15 @@ module Api
 
     def show
       render json: { id: @theme.id, title: @theme.title, room_id: @theme.room_id }
+    end
+
+    # テーマ名はルームの参加者なら誰でも変更できる（削除の扱いと揃える）
+    def update
+      if @theme.update(theme_params)
+        render json: theme_json(@theme)
+      else
+        render json: { errors: @theme.errors.full_messages }, status: :unprocessable_entity
+      end
     end
 
     def destroy
