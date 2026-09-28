@@ -21,7 +21,7 @@ Rails.application.routes.draw do
     post "line/login", to: "line_logins#create"
     post "line/account_link", to: "line_account_links#create"
     delete "line/account_link", to: "line_account_links#destroy"
-    resources :rooms, only: [ :index, :show, :create, :destroy ] do
+    resources :rooms, only: [ :index, :show, :create, :update, :destroy ] do
       resources :invitations, only: [ :create ]
       resources :themes, only: [ :index, :create ]
     end

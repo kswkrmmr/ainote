@@ -136,4 +136,51 @@ RSpec.describe "Api::Rooms", type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
   end
+
+  describe "PATCH /api/rooms/:id" do
+    let(:owner) { create(:user) }
+    let(:headers) { { "Authorization" => "Bearer #{JsonWebToken.encode(user_id: owner.id)}" } }
+    let(:room) { create(:room, owner: owner) }
+    let!(:owner_member) { create(:room_member, room: room, user: owner, partner_display_name: "つま") }
+    let(:partner) { create(:user) }
+    let!(:partner_member) { create(:room_member, room: room, user: partner, partner_display_name: "おっと") }
+
+    it "updates the display name the current user gave their partner" do
+      patch "/api/rooms/#{room.id}", params: { room: { partner_display_name: "おかあさん" } }, headers: headers
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)["partner_display_name"]).to eq("おかあさん")
+      expect(owner_member.reload.partner_display_name).to eq("おかあさん")
+    end
+
+    it "leaves the name the partner gave untouched" do
+      patch "/api/rooms/#{room.id}", params: { room: { partner_display_name: "おかあさん" } }, headers: headers
+
+      expect(partner_member.reload.partner_display_name).to eq("おっと")
+    end
+
+    it "returns unprocessable_entity with a blank name" do
+      patch "/api/rooms/#{room.id}", params: { room: { partner_display_name: "" } }, headers: headers
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(owner_member.reload.partner_display_name).to eq("つま")
+    end
+
+    it "returns not_found for a room the current user is not a member of, leaving it untouched" do
+      other_owner = create(:user)
+      other_room = create(:room, owner: other_owner)
+      other_member = create(:room_member, room: other_room, user: other_owner, partner_display_name: "ほかのひと")
+
+      patch "/api/rooms/#{other_room.id}", params: { room: { partner_display_name: "だれか" } }, headers: headers
+
+      expect(response).to have_http_status(:not_found)
+      expect(other_member.reload.partner_display_name).to eq("ほかのひと")
+    end
+
+    it "returns unauthorized without a token" do
+      patch "/api/rooms/#{room.id}", params: { room: { partner_display_name: "おかあさん" } }
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
 end

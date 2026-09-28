@@ -1,6 +1,7 @@
 module Api
   class RoomsController < ApplicationController
     before_action :authenticate_user!
+    before_action :set_room_member, only: [ :show, :update, :destroy ]
 
     def index
       room_members = current_user.room_members.includes(room: { room_members: { user: { avatar_attachment: :blob } } })
@@ -8,12 +9,15 @@ module Api
     end
 
     def show
-      room_member = current_user.room_members.find_by(room_id: params[:id])
+      render json: room_json(@room_member)
+    end
 
-      if room_member
-        render json: room_json(room_member)
+    # 呼び名は「自分から見た相手の呼び方」なので、変更できるのは自分のものだけ
+    def update
+      if @room_member.update(room_params)
+        render json: room_json(@room_member)
       else
-        render json: { errors: [ "ルームが見つかりません" ] }, status: :not_found
+        render json: { errors: @room_member.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
@@ -28,17 +32,17 @@ module Api
     end
 
     def destroy
-      room_member = current_user.room_members.find_by(room_id: params[:id])
-
-      if room_member
-        room_member.room.destroy
-        head :no_content
-      else
-        render json: { errors: [ "ルームが見つかりません" ] }, status: :not_found
-      end
+      @room_member.room.destroy
+      head :no_content
     end
 
     private
+
+    def set_room_member
+      @room_member = current_user.room_members.find_by(room_id: params[:id])
+
+      render json: { errors: [ "ルームが見つかりません" ] }, status: :not_found unless @room_member
+    end
 
     def room_json(room_member)
       partner = room_member.room.room_members.find { |member| member.user_id != current_user.id }&.user
