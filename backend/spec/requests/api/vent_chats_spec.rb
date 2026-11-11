@@ -100,6 +100,43 @@ RSpec.describe "Api::VentChats", type: :request do
       expect(JSON.parse(response.body)["errors"]).to be_present
     end
 
+    it "returns service_unavailable with a pause message when the AI quota is exceeded" do
+      quota_error = OpenAI::Errors::RateLimitError.new(
+        url: URI("https://api.openai.com/v1/chat/completions"),
+        status: 429,
+        headers: {},
+        body: { error: { code: "insufficient_quota", type: "insufficient_quota", message: "quota" } },
+        request: nil,
+        response: nil
+      )
+      allow(VentChat).to receive(:reply).and_raise(quota_error)
+
+      post "/api/vent_chats",
+        params: { messages: [ { role: "user", content: "もう限界" } ] },
+        headers: headers
+
+      expect(response).to have_http_status(:service_unavailable)
+      expect(JSON.parse(response.body)["errors"]).to eq([ AiErrorHandling::QUOTA_EXCEEDED_MESSAGE ])
+    end
+
+    it "keeps the retry message for a temporary rate limit" do
+      rate_limit_error = OpenAI::Errors::RateLimitError.new(
+        url: URI("https://api.openai.com/v1/chat/completions"),
+        status: 429,
+        headers: {},
+        body: { error: { code: "rate_limit_exceeded", type: "requests", message: "slow down" } },
+        request: nil,
+        response: nil
+      )
+      allow(VentChat).to receive(:reply).and_raise(rate_limit_error)
+
+      post "/api/vent_chats",
+        params: { messages: [ { role: "user", content: "もう限界" } ] },
+        headers: headers
+
+      expect(response).to have_http_status(:bad_gateway)
+    end
+
     it "returns unauthorized without a token" do
       post "/api/vent_chats", params: { messages: [ { role: "user", content: "テスト" } ] }
 
